@@ -6,6 +6,7 @@ from common.core import *
 from common.audio import *
 from common.mixer import *
 from common.synth import *
+from building_block import *
 
 class AudioController(object):
     def __init__(self, channel=0, patch=(0,1)):
@@ -27,6 +28,11 @@ class AudioController(object):
 
     def transpose(self, steps):
         self.transpose_steps += steps
+
+    def play_chord(self, chord):
+        notes = chord.get_notes()
+        for note in notes:
+            self.play_note(note, duration=1)
 
     def set_exact_transpose(self, transpose_steps):
         self.transpose_steps = transpose_steps

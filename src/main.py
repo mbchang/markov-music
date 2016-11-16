@@ -51,7 +51,7 @@ class MarkovMusicWidget(BaseWidget):
     # Be careful with how we detect clicks - should only count a click if the
     # touch up is at the same-ish location as the touch down.
     def on_touch_down(self, touch):
-        self.cs.test_play_note()
+        self.cs.test_play_chord()
 
     def on_touch_up(self, touch):
         pass

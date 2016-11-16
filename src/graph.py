@@ -9,7 +9,7 @@ class Graph():
         pass
 
 
-class Chord_Graph(Graph):
+class ChordGraph(Graph):
     pass
     # query
     # viterbi
@@ -31,7 +31,7 @@ class Chord_Graph(Graph):
         pass
 
 
-class Phrase_Bank(Graph):
+class PhraseBank(Graph):
     pass
 
     def get_children(self, phrase):

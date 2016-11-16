@@ -3,6 +3,7 @@
 
 from kivy.clock import Clock as kivyClock
 from block_builder import *
+from building_block import *
 
 class ChordSelection(object):
     def __init__(self, audio_control, display):
@@ -20,6 +21,10 @@ class ChordSelection(object):
     # Just a testing function.
     def test_play_note(self):
         self.audio_control.play_note(60)
+
+    def test_play_chord(self):
+        chord = Chord()
+        self.audio_control.play_chord(chord)
 
     def activate(self):
         self.active = True
