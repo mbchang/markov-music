@@ -2,17 +2,23 @@
 into larger blocks, e.g. assembling chords into phrases. '''
 
 class BlockBuilder(object):
-    def __init__(self):
+    def __init__(self, phrase_length=8):
         super(BlockBuilder, self).__init__()
         # Contains the primitives we connected so far.
         self.blocks = []
+        self.phrase_length = phrase_length
+
+    def set_phrase_length(self, length):
+        self.phrase_length = length
 
     def add_block(self, block):
+        if len(self.blocks) >= self.phrase_length:
+            return
         self.blocks.append(block)
 
     # Remove the last block, and return that block to the caller.
     def remove_block(self):
-        if len(self.blocks == 0):
+        if len(self.blocks) == 0:
             return None
         else:
             return self.blocks.pop()

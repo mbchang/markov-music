@@ -11,8 +11,14 @@ class ChordSelection(object):
         super(ChordSelection, self).__init__()
         self.audio_control = audio_control
         self.display = display
+
+        self.phrase_length = 8
         # Initialize display with the node button callback.
-        self.display.set_node_button_callback(self.on_node_click)
+        self.display.set_node_button_callback(self.on_node_button_click)
+        self.display.set_play_button_callback(self.on_play_button_click)
+        self.display.set_undo_button_callback(self.on_undo_button_click)
+        self.display.set_preview_button_callback(self.on_preview_button_click)
+        self.display.set_phrase_length(self.phrase_length)
         self.block_builder = BlockBuilder()
 
         self.active = False
@@ -24,11 +30,22 @@ class ChordSelection(object):
         chords.append(Chord(notes=[59, 62, 67], name='V6'))
         self.display.set_chords(chords)
 
-    def on_node_click(self, instance):
+    def on_undo_button_click(self, instance):
+        self.block_builder.remove_block()
+        self.display.pop_preview_button()
+
+    def on_play_button_click(self, instance):
+        self.audio_control.play_progression(self.block_builder.get_current_blocks())
+
+    def on_node_button_click(self, instance):
         print instance.chord.get_name(), ":", instance.chord.get_notes()
         self.audio_control.play_chord(instance.chord)
         # Make a selection: update both the block builder and the display.
         self.block_builder.add_block(instance.chord)
+        self.display.add_node_to_progression(instance.chord)
+
+    def on_preview_button_click(self, instance):
+        self.audio_control.play_chord(instance.chord)
 
     # Just a testing function.
     def test_play_note(self):
