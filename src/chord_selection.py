@@ -5,12 +5,14 @@ from kivy.clock import Clock as kivyClock
 from block_builder import *
 from building_block import *
 from chord_selection_display import *
+from graph import ChordGraph
 
 class ChordSelection(object):
     def __init__(self, audio_control, display):
         super(ChordSelection, self).__init__()
         self.audio_control = audio_control
         self.display = display
+        self.graph = ChordGraph()
 
         self.phrase_length = 8
         # Initialize display with the node button callback.
@@ -23,26 +25,26 @@ class ChordSelection(object):
 
         self.active = False
 
-        # Make some chords.
-        chords = []
-        chords.append(Chord(notes=[60, 64, 67], name='I'))
-        chords.append(Chord(notes=[60, 65, 69], name='IV64'))
-        chords.append(Chord(notes=[59, 62, 67], name='V6'))
-        self.display.set_chords(chords)
+        # Initialize some chords.
+        self.display.set_chords(self.graph.get_children())
 
     def on_undo_button_click(self, instance):
         self.block_builder.remove_block()
         self.display.pop_preview_button()
+        self.graph.undo_selection()
+        self.display.set_chords(self.graph.get_children())
 
     def on_play_button_click(self, instance):
         self.audio_control.play_progression(self.block_builder.get_current_blocks())
 
     def on_node_button_click(self, instance):
-        print instance.chord.get_name(), ":", instance.chord.get_notes()
         self.audio_control.play_chord(instance.chord)
         # Make a selection: update both the block builder and the display.
         self.block_builder.add_block(instance.chord)
         self.display.add_node_to_progression(instance.chord)
+        # Get next set of possible chords.
+        self.graph.make_selection(instance.chord)
+        self.display.set_chords(self.graph.get_children())
 
     def on_preview_button_click(self, instance):
         self.audio_control.play_chord(instance.chord)

@@ -115,6 +115,8 @@ class ChordSelectionLayout(RelativeLayout):
 
     def set_chords(self, chords):
         self.chords = chords
+        for button in self.buttons:
+            self.remove_widget(button)
         self.buttons = []
         for chord_idx in range(len(self.chords)):
             chord = self.chords[chord_idx]
