@@ -16,6 +16,10 @@ class ChordSelectionScreen(Widget):
         self.add_widget(self.current_progression_layout)
         self.add_widget(self.chord_selection_layout)
 
+    def reset(self):
+        self.current_progression_layout.reset()
+        self.chord_selection_layout.reset()
+
     def set_chords(self, chords):
         self.chord_selection_layout.set_chords(chords)
 
@@ -34,11 +38,20 @@ class ChordSelectionScreen(Widget):
     def set_undo_button_callback(self, callback):
         self.current_progression_layout.set_undo_button_callback(callback)
 
+    def set_save_button_callback(self, callback):
+        self.current_progression_layout.set_save_button_callback(callback)
+
     def add_node_to_progression(self, chord):
         self.current_progression_layout.add_preview_button(chord)
 
     def set_phrase_length(self, phrase_length):
         self.current_progression_layout.set_phrase_length(phrase_length)
+
+    def show_save_button(self):
+        self.current_progression_layout.show_save_button()
+
+    def hide_save_button(self):
+        self.current_progression_layout.hide_save_button()
 
     def on_update(self, dt):
         pass
@@ -55,15 +68,26 @@ class CurrentProgressionLayout(RelativeLayout):
         self.preview_buttons = []
         self.preview_button_callback = None
 
-        play_pos_hint = {'center_x': .9, 'center_y': .3}
-        play_size_hint = (.15, .3)
+        # Add menu buttons.
+        play_pos_hint = {'center_x': .9, 'center_y': .25}
+        play_size_hint = (.15, .2)
         self.play_button = MenuButton(play_pos_hint, play_size_hint, 'Play')
         self.add_widget(self.play_button)
 
-        undo_pos_hint = {'center_x': .9, 'center_y': .6}
-        undo_size_hint = (.15, .3)
+        undo_pos_hint = {'center_x': .9, 'center_y': .5}
+        undo_size_hint = (.15, .2)
         self.undo_button = MenuButton(undo_pos_hint, undo_size_hint, 'Undo')
         self.add_widget(self.undo_button)
+
+        # Do not show save button on initialization.
+        save_pos_hint = {'center_x': .9, 'center_y': .75}
+        save_size_hint = (.15, .2)
+        self.save_button = MenuButton(save_pos_hint, save_size_hint, 'Save')
+
+    def reset(self):
+        for button in self.preview_buttons:
+            self.remove_widget(button)
+        self.preview_buttons = []
 
     def add_preview_button(self, chord):
         # TODO: buttons are not vertically centered.
@@ -86,8 +110,17 @@ class CurrentProgressionLayout(RelativeLayout):
     def set_undo_button_callback(self, callback):
         self.undo_button.set_callback(callback)
 
+    def set_save_button_callback(self, callback):
+        self.save_button.set_callback(callback)
+
     def set_phrase_length(self, phrase_length):
         self.phrase_length = phrase_length
+
+    def show_save_button(self):
+        self.add_widget(self.save_button)
+
+    def hide_save_button(self):
+        self.remove_widget(self.save_button)
 
 
 class MenuButton(Button):
@@ -98,7 +131,6 @@ class MenuButton(Button):
     def set_callback(self, callback):
         self.callback = callback
         self.bind(on_press=self.callback)
-
 
 
 class ChordSelectionLayout(RelativeLayout):
@@ -113,11 +145,15 @@ class ChordSelectionLayout(RelativeLayout):
         self.chords = []
         self.buttons = []
 
-    def set_chords(self, chords):
-        self.chords = chords
+    def reset(self):
+        self.chords = []
         for button in self.buttons:
             self.remove_widget(button)
         self.buttons = []
+
+    def set_chords(self, chords):
+        self.reset()
+        self.chords = chords
         for chord_idx in range(len(self.chords)):
             chord = self.chords[chord_idx]
             pos_hint = {'center_x': (1.0 + chord_idx)/(1+len(self.chords)), 'center_y': .5}

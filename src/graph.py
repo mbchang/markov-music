@@ -37,6 +37,9 @@ class ChordGraph(Graph):
     def undo_selection(self):
         self.index -= 1
 
+    def reset(self):
+        self.index = 0
+
     def get_children(self):
         # Returns the set of next possible chords given current state.
         g = Chord([59,62,67],'V')
@@ -64,13 +67,23 @@ class ChordGraph(Graph):
 
 
 class PhraseBank(Graph):
-    pass
+    def __init__(self):
+        super(PhraseBank, self).__init__()
+        self.bank = []
+        self.prefixes = {}
+
+    def add_to_bank(self, phrase):
+        self.bank.append(phrase)
+        if phrase.get_start().get_name() not in self.prefixes:
+            self.prefixes[phrase.get_start().get_name()] = [phrase]
+        else:
+            self.prefixes[phrase.get_start().get_name()].append(phrase)
 
     def get_children(self, phrase):
-        pass
+        return self.prefixes[phrase.get_start().get_name()]
 
     def get_phrases(self):
-        pass
+        return self.bank
 
 
 

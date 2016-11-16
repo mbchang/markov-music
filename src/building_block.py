@@ -37,5 +37,19 @@ class Chord(BuildingBlock):
 
 # Phrase is a building block and a node group.
 class Phrase(BuildingBlock):
-    def __init__(self):
-        super(Chord, self).__init__()
+    def __init__(self, chords=[]):
+        super(Phrase, self).__init__()
+        self.chords = chords
+
+    def get_start(self):
+        if len(self.chords) == 0:
+            return None
+        return self.chords[0]
+
+    def get_end(self):
+        if len(self.chords) == 0:
+            return None
+        return self.chords[-1]
+
+    def get_chords(self):
+        return self.chords
