@@ -4,19 +4,31 @@
 from kivy.clock import Clock as kivyClock
 from block_builder import *
 from building_block import *
+from chord_selection_display import *
 
 class ChordSelection(object):
     def __init__(self, audio_control, display):
         super(ChordSelection, self).__init__()
         self.audio_control = audio_control
         self.display = display
+        # Initialize display with the node button callback.
+        self.display.set_node_button_callback(self.on_node_click)
         self.block_builder = BlockBuilder()
 
         self.active = False
 
-    def on_click(self, pos):
-        # Handle clicks!!!
-        pass
+        # Make some chords.
+        chords = []
+        chords.append(Chord(notes=[60, 64, 67], name='I'))
+        chords.append(Chord(notes=[60, 65, 69], name='IV64'))
+        chords.append(Chord(notes=[59, 62, 67], name='V6'))
+        self.display.set_chords(chords)
+
+    def on_node_click(self, instance):
+        print instance.chord.get_name(), ":", instance.chord.get_notes()
+        self.audio_control.play_chord(instance.chord)
+        # Make a selection: update both the block builder and the display.
+        self.block_builder.add_block(instance.chord)
 
     # Just a testing function.
     def test_play_note(self):
