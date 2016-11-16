@@ -53,11 +53,11 @@ class ChordGraph(Graph):
         if self.index == 0:
             return [Chord()]
         elif self.index == 1:
-            return [a,b,f,d]
+            return [a,b,f,d,g]
         elif self.index == 2:
-            return [c,d,e,g,b]
+            return [c,d,e,g,a]
         elif self.index == 3:
-            return [a,g]
+            return [f,g]
         else:
             return [a,b,c,d,e,f,g]
 
