@@ -25,38 +25,27 @@ class MarkovMusicWidget(BaseWidget):
         self.add_widget(self.info)
 
         # Create an instance of each display and add to canvas.
-        self.cs_display = ChordSelectionDisplay()
-        self.canvas.add(self.cs_display)
-        self.p_display = PlaybackDisplay()
-        self.canvas.add(self.p_display)
+        self.cs_display = ChordSelectionScreen()
+        self.add_widget(self.cs_display)
+
+        # self.p_display = PlaybackDisplay()
+        # self.canvas.add(self.p_display)
 
         # Two main modes. ChordSelection and Playback.
         self.cs = ChordSelection(self.audio_control, self.cs_display)
-        self.p = Playback(self.audio_control, self.p_display)
+        # self.p = Playback(self.audio_control, self.p_display)
 
         # Flag for which mode we are in.
         # True = chord selection, False = playback.
         self.cs_mode = True
-        # Activate chord selection and keep playback deactivated.
-        self.change_mode_cs()
+        # # Activate chord selection and keep playback deactivated.
+        # self.change_mode_cs()
 
     # Handle any key events.
     def on_key_down(self, keycode, modifiers):
         self.toggle_mode()
 
     def on_key_up(self, keycode):
-        pass
-
-    # Handle mouse click events.
-    # Be careful with how we detect clicks - should only count a click if the
-    # touch up is at the same-ish location as the touch down.
-    def on_touch_down(self, touch):
-        self.cs.test_play_note()
-
-    def on_touch_up(self, touch):
-        pass
-
-    def on_touch_move(self, touch):
         pass
 
     # Switch between chord selection and playback modes.
@@ -86,6 +75,6 @@ class MarkovMusicWidget(BaseWidget):
             self.p.on_update()
 
 # Set to full screen (commented out because unnecessary while developing).
-# Config.set('graphics', 'fullscreen', 1)
+# Config.set('graphics', 'fullscreen', 0)
 # Config.write()
 run(MarkovMusicWidget)

@@ -2,62 +2,176 @@
 selection display. '''
 
 from common_display import *
+from building_block import *
 
-class ChordSelectionDisplay(InstructionGroup):
+class ChordSelectionScreen(Widget):
     def __init__(self):
-        super(ChordSelectionDisplay, self).__init__()
-        # Add a translate. This can be used to switch between chord selection
-        # mode and playback mode.
-        self.translate = Translate()
-        self.add(self.translate)
-        # Testing that this pipeline of graphics stuff works...
-        # TODO: remove this random bubble when we put in real graphics.
-        self.add(Bubble((50,50), (1.0, 0, 0), 40))
+        super(ChordSelectionScreen, self).__init__()
 
-        # A list of BlockDisplays.
-        self.block_displays = []
-        # A block bank display.
-        self.block_bank_display = BlockBankDisplay()
-        # Need something to display the phrase or sentence that we have built
-        # so far...
+        # Contains two layouts.
+        self.current_progression_layout = CurrentProgressionLayout((20, Window.height - 200),
+                                                                   (Window.width - 40, 200))
+        self.chord_selection_layout = ChordSelectionLayout((20, 20),
+                                                           (Window.width - 40, Window.height - 200))
+        self.add_widget(self.current_progression_layout)
+        self.add_widget(self.chord_selection_layout)
 
-    def activate(self):
-        # Move display back into on screen position.
-        self.translate.y = 0
+    def reset(self):
+        self.current_progression_layout.reset()
+        self.chord_selection_layout.reset()
 
-    def inactivate(self):
-        # Move this entire display off screen.
-        self.translate.y = -10000
+    def set_chords(self, chords):
+        self.chord_selection_layout.set_chords(chords)
 
-    # TODO - is this the right way to do this?
-    # Get positions to pass to parent ChordSelection for click detection.
-    def get_block_positions():
-        # Return a list of positions, doesn't have to be entire BlockDisplay
-        # object.
-        pass
+    def pop_preview_button(self):
+        self.current_progression_layout.pop_preview_button()
 
-    # Changes the set of blocks that we are displaying.
-    def set_blocks(self, blocks):
-        # Create a BlockDisplay for each block.
-        pass
+    def set_preview_button_callback(self, callback):
+        self.current_progression_layout.set_preview_button_callback(callback)
 
-    def select_block(self, block_idx):
-        pass
+    def set_node_button_callback(self, callback):
+        self.chord_selection_layout.set_node_button_callback(callback)
 
-    def add_block_to_bank(self, block):
-        pass
+    def set_play_button_callback(self, callback):
+        self.current_progression_layout.set_play_button_callback(callback)
+
+    def set_undo_button_callback(self, callback):
+        self.current_progression_layout.set_undo_button_callback(callback)
+
+    def set_save_button_callback(self, callback):
+        self.current_progression_layout.set_save_button_callback(callback)
+
+    def add_node_to_progression(self, chord):
+        self.current_progression_layout.add_preview_button(chord)
+
+    def set_phrase_length(self, phrase_length):
+        self.current_progression_layout.set_phrase_length(phrase_length)
+
+    def show_save_button(self):
+        self.current_progression_layout.show_save_button()
+
+    def hide_save_button(self):
+        self.current_progression_layout.hide_save_button()
 
     def on_update(self, dt):
         pass
 
-# Display a single block, as in when displaying choices.
-class BlockDisplay(InstructionGroup):
-    def __init__(self, pos, rgb):
-        super(BlockDisplay, self).__init__()
+class CurrentProgressionLayout(RelativeLayout):
+    def __init__(self, pos, size, phrase_length=8):
+        super(CurrentProgressionLayout, self).__init__()
+        self.pos = pos
+        self.size = size
+        self.phrase_length = phrase_length
+        self.canvas.add(Color(1.0, 0, 0))
+        self.canvas.add(Rectangle(size=self.size))
 
-# Display the bank of blocks the user has already created.
-class BlockBankDisplay(InstructionGroup):
-    def __init__(self):
-        super(BlockBankDisplay, self).__init__()
-        # Probably want a line for the divider, and then an array of blocks.
-        # Have set positions for the blocks.
+        self.preview_buttons = []
+        self.preview_button_callback = None
+
+        # Add menu buttons.
+        play_pos_hint = {'center_x': .9, 'center_y': .25}
+        play_size_hint = (.15, .2)
+        self.play_button = MenuButton(play_pos_hint, play_size_hint, 'Play')
+        self.add_widget(self.play_button)
+
+        undo_pos_hint = {'center_x': .9, 'center_y': .5}
+        undo_size_hint = (.15, .2)
+        self.undo_button = MenuButton(undo_pos_hint, undo_size_hint, 'Undo')
+        self.add_widget(self.undo_button)
+
+        # Do not show save button on initialization.
+        save_pos_hint = {'center_x': .9, 'center_y': .75}
+        save_size_hint = (.15, .2)
+        self.save_button = MenuButton(save_pos_hint, save_size_hint, 'Save')
+
+    def reset(self):
+        for button in self.preview_buttons:
+            self.remove_widget(button)
+        self.preview_buttons = []
+
+    def add_preview_button(self, chord):
+        # TODO: buttons are not vertically centered.
+        pos_hint = {'center_x': .8*((1.0 + len(self.preview_buttons))/(1.0+self.phrase_length)), 'center_y': .5}
+        size_hint = (1.0/(1 + self.phrase_length)*.75, .8)
+        preview_button = NodeButton(pos_hint, size_hint, chord)
+        self.preview_buttons.append(preview_button)
+        self.add_widget(preview_button)
+        preview_button.set_callback(self.preview_button_callback)
+
+    def pop_preview_button(self):
+        self.remove_widget(self.preview_buttons.pop())
+
+    def set_preview_button_callback(self, callback):
+        self.preview_button_callback = callback
+
+    def set_play_button_callback(self, callback):
+        self.play_button.set_callback(callback)
+
+    def set_undo_button_callback(self, callback):
+        self.undo_button.set_callback(callback)
+
+    def set_save_button_callback(self, callback):
+        self.save_button.set_callback(callback)
+
+    def set_phrase_length(self, phrase_length):
+        self.phrase_length = phrase_length
+
+    def show_save_button(self):
+        self.add_widget(self.save_button)
+
+    def hide_save_button(self):
+        self.remove_widget(self.save_button)
+
+
+class MenuButton(Button):
+    def __init__(self, pos_hint, size_hint, label):
+        super(MenuButton, self).__init__(pos_hint=pos_hint, size_hint=size_hint, text=label)
+        self.callback = None
+
+    def set_callback(self, callback):
+        self.callback = callback
+        self.bind(on_press=self.callback)
+
+
+class ChordSelectionLayout(RelativeLayout):
+    def __init__(self, pos, size):
+        super(ChordSelectionLayout, self).__init__()
+        self.pos = pos
+        self.size = size
+        self.canvas.add(Color(0, 0, 1.0))
+        self.canvas.add(Rectangle(size=self.size))
+
+        self.node_button_callback = None
+        self.chords = []
+        self.buttons = []
+
+    def reset(self):
+        self.chords = []
+        for button in self.buttons:
+            self.remove_widget(button)
+        self.buttons = []
+
+    def set_chords(self, chords):
+        self.reset()
+        self.chords = chords
+        for chord_idx in range(len(self.chords)):
+            chord = self.chords[chord_idx]
+            pos_hint = {'center_x': (1.0 + chord_idx)/(1+len(self.chords)), 'center_y': .5}
+            size_hint = (1.0/(1 + len(self.chords))*.75, .2)
+            self.buttons.append(NodeButton(pos_hint, size_hint, chord))
+        for button in self.buttons:
+            if self.node_button_callback is None:
+                raise Exception("No node button callback.")
+            button.set_callback(self.node_button_callback)
+            self.add_widget(button)
+
+    def set_node_button_callback(self, callback):
+        self.node_button_callback = callback
+
+class NodeButton(Button):
+    def __init__(self, pos_hint, size_hint, chord):
+        super(NodeButton, self).__init__(pos_hint=pos_hint, size_hint=size_hint, text=chord.get_name())
+        self.chord = chord
+
+    def set_callback(self, callback):
+        self.bind(on_press=callback)
