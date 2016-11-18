@@ -21,6 +21,13 @@ class Chord(BuildingBlock):
         self.name = name
         self.root = notes[0]
         self.inversion = inversion
+        self.scale_root = 0
+
+    def get_scale_root(self):
+        # TODO: make this combined with RomanNumeral
+        rn_map = {'I': 0, 'ii': 2, 'iii': 4, 
+                'IV': 5, 'V': 7, 'vi': 9, 'vii0': 11}
+        return self.notes[0]-rn_map[self.name]
 
     def set_notes(self, notes):
         self.notes = notes
@@ -70,3 +77,5 @@ class Phrase(BuildingBlock):
 
     def get_chords(self):
         return self.chords
+
+
