@@ -2,6 +2,7 @@
 to display to the user given some optional input constraints. '''
 
 from building_block import *
+import numpy as np
 
 # Abstract class.
 class Graph(object):
@@ -109,6 +110,36 @@ class ChordGraph(Graph):
 
     def _viterbi(self, constraints):
         pass
+
+        # need a trellis
+        # need start 
+        # need end
+        # need binary transition matrix
+
+
+class Viterbi(object):
+    def __init__(self):
+        super(Viterbi, self).__init__()
+        self.t = build_transition_matrix()
+
+    def build_transition_matrix(self):
+        t = np.array(7,7)
+        for i in xrange(7):
+            if i == 0:
+                pass
+            elif i == 1:
+                pass
+            elif i == 2:
+                pass
+            elif i == 3:
+                pass
+            elif i == 4:
+                pass
+            elif i == 5:
+                pass
+            elif i == 6:
+                pass
+
 
 
 class RomanNumeral(object):
