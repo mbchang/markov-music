@@ -15,10 +15,18 @@ class BuildingBlock(object):
 
 
 class Chord(BuildingBlock):
-    def __init__(self, notes=[60, 64, 67], name='I'):
+    def __init__(self, notes=[60, 64, 67], name='I',inversion='R'):
         super(Chord, self).__init__()
         self.notes = notes
         self.name = name
+        if inversion == 'R' or inversion == '7':
+            self.root = notes[0]
+        elif inversion == '6' or inversion == '65':
+            self.root = notes[1]
+        elif inversion == '64' or inversion == '43':
+            self.root = notes[2]
+        elif inversion == '2':
+            self.root = notes[3]
 
     def set_notes(self, notes):
         self.notes = notes
@@ -31,6 +39,13 @@ class Chord(BuildingBlock):
 
     def get_name(self):
         return self.name
+
+    def get_root(self):
+        return self.root
+
+    def get_inversion(self):
+        return self.inversion
+
 
 
 

@@ -13,8 +13,8 @@ Playback is the analogous structure to ChordSelection, but for p mode.
 There is a single AudioController that is shared by both modes. It controls all sound-producing aspects of the app, which for now is just producing notes. It uses the synth.
 
 A Graph has two methods:
-    get_choices(): returns list of next possible chord objects from current state
-    make_choice(chord): passes in a chord object and advances the graph object based on that particular choice.
+    get_children(): returns list of next possible chord objects from current state
+    make_selection(chord): passes in a chord object and advances the graph object based on that particular choice.
 
 BlockBuilder is a reusable class that facilitates composing blocks together, and can handle adding blocks, removing blocks (to support "undo"), and returning the final composed block.
 
