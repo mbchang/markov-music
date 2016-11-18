@@ -17,22 +17,24 @@ class BuildingBlock(object):
 class Chord(BuildingBlock):
     def __init__(self, notes=[60, 64, 67], name='I',inversion='R'):
         super(Chord, self).__init__()
-        self.notes = notes
+        self.notes = notes  # always in canonical triad form
         self.name = name
-        if inversion == 'R' or inversion == '7':
-            self.root = notes[0]
-        elif inversion == '6' or inversion == '65':
-            self.root = notes[1]
-        elif inversion == '64' or inversion == '43':
-            self.root = notes[2]
-        elif inversion == '2':
-            self.root = notes[3]
+        self.root = notes[0]
+        self.inversion = inversion
 
     def set_notes(self, notes):
         self.notes = notes
 
-    def get_notes(self):
-        return self.notes
+    def get_notes(self, with_inversion=True):
+        # may be different from triad form 
+        if self.inversion == 'R' or self.inversion == '7' or not with_inversion:
+            return self.notes
+        elif self.inversion == '6' or self.inversion == '65':
+            return self.notes[1:]+self.notes[0]
+        elif self.inversion == '64' or self.inversion == '43':
+            return self.notes[2:]+self.notes[:1]
+        elif self.inversion == '2':
+            return self.notes[3:]+self.notes[:2]
 
     def set_name(self):
         self.name = name
