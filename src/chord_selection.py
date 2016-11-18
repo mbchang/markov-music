@@ -39,11 +39,11 @@ class ChordSelection(object):
         self.block_builder.clear_blocks()
 
     def on_undo_button_click(self, instance):
-        self.block_builder.remove_block()
-        self.display.pop_preview_button()
-        self.graph.undo_selection()
-        self.display.set_chords(self.graph.get_children())
-        self.toggle_save_button()
+        if self.block_builder.remove_block() is not None:
+            self.display.pop_preview_button()
+            self.graph.undo_selection()
+            self.display.set_chords(self.graph.get_children())
+            self.toggle_save_button()
 
     def on_play_button_click(self, instance):
         self.audio_control.play_progression(self.block_builder.get_current_blocks())

@@ -24,38 +24,30 @@ class ChordGraph(Graph):
         # ending chord
         # make selection
 
-        #This is for testing purposes
-        self.index = 0
-        self.current_chord = None
+        # Need a stack of chords to support undo functionality.
+        # The last element of self.chord_stack is the current chord.
+        self.chord_stack = []
 
         self.rn = RomanNumeral()
 
     def make_selection(self, chord):
-        self.index +=1
-        self.current_chord = chord
+        self.chord_stack.append(chord)
 
     def add_constraint(self):
         pass
         # make selection
 
     def undo_selection(self):
-        self.index -= 1
+        self.chord_stack.pop()
+
 
     def reset(self):
-        self.index = 0
+        self.chord_stack = []
 
     def get_children(self):
         # Returns the set of next possible chords given current state.
-        if self.index == 0:
-            return self._get_unconstrained_children(self.current_chord)
-        elif self.index == 1:
-            return self._get_unconstrained_children(self.current_chord)
-        elif self.index == 2:
-            return self._get_unconstrained_children(self.current_chord)
-        elif self.index == 3:
-            return self._get_unconstrained_children(self.current_chord)
-        else:
-            return self._get_unconstrained_children(self.current_chord)
+        current_chord = None if len(self.chord_stack) == 0 else self.chord_stack[-1]
+        return self._get_unconstrained_children(current_chord)
 
     # can decide whether we want this to be in the chord class or not
     def _get_unconstrained_children(self, chord):
@@ -63,7 +55,7 @@ class ChordGraph(Graph):
 
             TODO: can return other inversions
         """
-        if not self.current_chord:
+        if chord is None:
             sr = 60  # TODO: we should initialize graph with a key, or have a button that selects key
             return [self._generate_chord('I', sr, 'R')] # TODO can make this more interesting
         else:
@@ -163,7 +155,7 @@ class RomanNumeral(object):
 
     def rn_root_lookup(self, rn):
         # Perhaps make this an attribute?
-        rn_map = {'I': 0, 'ii': 2, 'iii': 4, 
+        rn_map = {'I': 0, 'ii': 2, 'iii': 4,
                 'IV': 5, 'V': 7, 'vi': 9, 'vii0': 11}
         return rn_map[rn]
 
