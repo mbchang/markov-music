@@ -81,6 +81,8 @@ class ChordGraph(Graph):
 
     # TODO: make an undo_constraint: 
     # perhaps we can generate a stack of constraints: (chord_idx, original_vals, new_vals)
+    # TODO: add safety mechanism such that the user cannot specify a constraint that kills all possible paths
+    # TODO: if this is called by an outside method, then we'd need to figure out a mapping
     def add_constraint(self, t, values):
         """
             t: in range [0,7]
