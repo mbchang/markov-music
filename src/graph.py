@@ -17,75 +17,127 @@ class ChordGraph(Graph):
 
     def __init__(self):
         super(ChordGraph, self).__init__()
-        # query
-        # viterbi
-
-        # starting chord
-        # ending chord
-        # make selection
-
         # Need a stack of chords to support undo functionality.
         # The last element of self.chord_stack is the current chord.
         self.chord_stack = []
-
         self.rn = RomanNumeral()
+
+        self.T = 8
+        self.S = 7
+        self.TM = self._build_transition_matrix()
+
+        # possible children: c[t,i,j] is 1 if j is a child of i
+        # where j is at time t, t starts at 0
+        # TODO: these indices need to be adjusted if you don't fix the first chord
+        self.C = np.tile(self.TM,(self.T,1,1)) # [T-1, S, S]
+
+        # TODO: add constraint for first chord
+        # TODO: this "6" should be a 7, but depends on your indexing
+        self.add_constraint(6,set([0,4]))  # it can only end in I or V
+
+    def _build_transition_matrix(self):
+            # t[i,j] is prob i transitions to j
+            # we do not allow self loops for now
+
+            t = np.zeros((7,7))
+
+            rows, cols = [],[]
+
+            # I: I, ii, iii, IV, V, vi, vii0
+            rows.extend([0]*6)
+            cols.extend(range(1,7))
+
+            # ii: ii, V, vii0
+            rows.extend([1]*2)
+            cols.extend([4,6])
+
+            # iii: iii, IV, vi
+            rows.extend([2]*2)
+            cols.extend([3,5])
+
+            # IV: I, ii, IV, V, vii0
+            rows.extend([3]*4)
+            cols.extend([0,1,4,6])
+
+            # V: I, V, vi
+            rows.extend([4]*2)
+            cols.extend([0,5])
+
+            # vi: ii, IV, vi
+            rows.extend([5]*2)
+            cols.extend([1,3])
+
+            # vii0: I, vii0
+            rows.extend([6]*1)
+            cols.extend([0])
+
+            t[rows, cols] = 1
+
+            return t
+
 
     def make_selection(self, chord):
         self.chord_stack.append(chord)
 
-    def add_constraint(self):
-        pass
-        # make selection
+    # TODO: make an undo_constraint: 
+    # perhaps we can generate a stack of constraints: (chord_idx, original_vals, new_vals)
+    def add_constraint(self, t, values):
+        """
+            t: in range [0,7]
+            chord_idx: in range [0,6] = [I, ii, iii, IV, V, vi, vii0]
+            values: set of values that are in range [0,6] = [I, ii, iii, IV, V, vi, vii0]
+        """
+        if t < 0:
+            return
+        else:
+            # i cannot take any value that is NOT in this set
+            # although this set can include values that i cannot take
+            for j in range(self.S):
+                # so at j != v, we need to kill all the i whose j != v
+                for i in range(self.S):
+                    if j not in values:
+                        self.C[t,i,j] = 0
+
+            new_values = set()
+            for j in range(self.S):
+                for i in range(self.S):
+                    if self.C[t,i,j] == 1:
+                        new_values.add(i)
+
+            self.add_constraint(t-1, new_values)
+
 
     def undo_selection(self):
         self.chord_stack.pop()
-
 
     def reset(self):
         self.chord_stack = []
 
     def get_children(self):
         # Returns the set of next possible chords given current state.
-        current_chord = None if len(self.chord_stack) == 0 else self.chord_stack[-1]
-        return self._get_unconstrained_children(current_chord)
+        current_idx = len(self.chord_stack)
+        current_chord = None if current_idx == 0 else self.chord_stack[-1]
+        children = self._get_children(current_chord, current_idx-1)
+        return children
 
     # can decide whether we want this to be in the chord class or not
-    def _get_unconstrained_children(self, chord):
+    def _get_children(self, chord, current_idx):
         """ Gets children purely from chord transition rules. No viterbi
 
             TODO: can return other inversions
         """
-        if chord is None:
+        print current_idx
+        if current_idx == -1:
+            assert chord is None
             sr = 60  # TODO: we should initialize graph with a key, or have a button that selects key
             return [self._generate_chord('I', sr, 'R')] # TODO can make this more interesting
         else:
             sr = chord.get_scale_root()
-            if chord.get_name() == 'I':
-                return [self._generate_chord('ii', sr, 'R'),
-                        self._generate_chord('iii', sr, 'R'),
-                        self._generate_chord('IV', sr, 'R'),
-                        self._generate_chord('V', sr, 'R'),
-                        self._generate_chord('vi', sr, 'R'),
-                        self._generate_chord('vii0', sr, 'R')]
-            elif chord.get_name() == 'ii':
-                return [self._generate_chord('V', sr, 'R'),
-                        self._generate_chord('vii0', sr, 'R')]
-            elif chord.get_name() == 'iii':
-                return [self._generate_chord('IV', sr, 'R'),
-                        self._generate_chord('vi', sr, 'R')]
-            elif chord.get_name() == 'IV':
-                return [self._generate_chord('I', sr, 'R'),
-                        self._generate_chord('ii', sr, 'R'),
-                        self._generate_chord('V', sr, 'R'),
-                        self._generate_chord('vii0', sr, 'R')]
-            elif chord.get_name() == 'V':
-                return [self._generate_chord('I', sr, 'R'),
-                        self._generate_chord('vi', sr, 'R')]
-            elif chord.get_name() == 'vi':
-                return [self._generate_chord('ii', sr, 'R'),
-                        self._generate_chord('IV', sr, 'R')]
-            elif chord.get_name() == 'vii0':
-                return [self._generate_chord('I', sr, 'R')]
+            chord_idx = self.rn.sd_rev_map[chord.get_name()]
+            children_idx = list(self.C[current_idx, chord_idx].nonzero()[0])
+            children = [self._generate_chord(self.rn.sd_map[ci], sr, 'R') for ci in children_idx]
+            return children
+
 
     # need to generate notes given roman numeral, scale root, and inversion
     def _generate_chord(self, rn, sr, inv):
@@ -100,37 +152,196 @@ class ChordGraph(Graph):
         return Chord(chord_notes, rn, inv)
 
 
-    def _viterbi(self, constraints):
-        pass
+# # under construction
+# class Viterbi(object):
+#     def __init__(self):
+#         super(Viterbi, self).__init__()
+#         self.t = self.build_transition_matrix()
+#         self.n = 8  # length 8
+#         self.s = 7  # 7 states
 
-        # need a trellis
-        # need start 
-        # need end
-        # need binary transition matrix
+#     def build_transition_matrix(self):
+#         # t[i,j] is prob i transitions to j
+#         # we do not allow self loops for now
+
+#         t = np.zeros((7,7))
+
+#         rows, cols = [],[]
+
+#         # I: I, ii, iii, IV, V, vi, vii0
+#         rows.extend([0]*6)
+#         cols.extend(range(1,7))
+
+#         # ii: ii, V, vii0
+#         rows.extend([1]*2)
+#         cols.extend([4,6])
+
+#         # iii: iii, IV, vi
+#         rows.extend([2]*2)
+#         cols.extend([3,5])
+
+#         # IV: I, ii, IV, V, vii0
+#         rows.extend([3]*4)
+#         cols.extend([0,1,4,6])
+
+#         # V: I, V, vi
+#         rows.extend([4]*2)
+#         cols.extend([0,5])
+
+#         # vi: ii, IV, vi
+#         rows.extend([5]*2)
+#         cols.extend([1,3])
+
+#         # vii0: I, vii0
+#         rows.extend([6]*1)
+#         cols.extend([0])
+
+#         t[rows, cols] = 1
+
+#         return t
+
+#     def initialize_parents(self, num_states, num_steps):
+#         p = np.empty((num_states, num_steps))
+#         p.fill(-1)
+#         return p
+
+#     def initialize_scores(self, num_states, num_steps):
+#         p = np.empty((num_states, num_steps))
+#         p.fill(-1)
+
+#         # initialize first column
+#         p[:,0].fill(1)
+#         return p
+
+#     def viterbi(self):
+#         # initialize
+#         scores = self.initialize_scores(self.s,self.n)
+#         parents = self.initialize_parents(self.s,self.n)
+#         transitions = self.build_transition_matrix()
+
+#         scores, parents = self.forward(transitions, scores, parents)
+#         sequence = self.backward(transitions, scores, parents)
+
+#         return sequence
 
 
-class Viterbi(object):
-    def __init__(self):
-        super(Viterbi, self).__init__()
-        self.t = build_transition_matrix()
+#     def forward(self, T, B, P):
+#         # B: best part ending at s at time i
+#         for i in xrange(1,self.n):
+#             for s in xrange(self.s):
+#                 print'T', T
+#                 print 'B',B
+#                 print 'P', P
+#                 print 'B[:,i-1]', B[:,i-1]
+#                 print 'T[:,i]', T[:,i]
+#                 print 'B[:,i-1]*T[:,s]', B[:,i-1]*T[:,i]
+#                 B[s,i] = np.max(B[:,i-1]*T[:,i])  # this should just be the nonzero ones
+#                 print 'B[s,i]', B[s,i]
+#                 P[s,i] = np.argmax(B[:,i-1]*T[:,s])
+#                 print'T', T
+#                 print 'B',B
+#                 print 'P', P
+#         assert False
+#         return B, P
 
-    def build_transition_matrix(self):
-        t = np.array(7,7)
-        for i in xrange(7):
-            if i == 0:
-                pass
-            elif i == 1:
-                pass
-            elif i == 2:
-                pass
-            elif i == 3:
-                pass
-            elif i == 4:
-                pass
-            elif i == 5:
-                pass
-            elif i == 6:
-                pass
+#     def backward(self, T, B, P):
+#         pass
+
+
+# class BruteForceViterbi(object):
+#     def __init__(self):
+#         super(BruteForceViterbi, self).__init__()
+#         self.t = self.build_transition_matrix()
+#         self.n = 8  # length 8
+#         self.s = 7  # 7 states
+
+#     def build_transition_matrix(self):
+#         # t[i,j] is prob i transitions to j
+#         # we do not allow self loops for now
+
+#         t = np.zeros((7,7))
+
+#         rows, cols = [],[]
+
+#         # I: I, ii, iii, IV, V, vi, vii0
+#         rows.extend([0]*6)
+#         cols.extend(range(1,7))
+
+#         # ii: ii, V, vii0
+#         rows.extend([1]*2)
+#         cols.extend([4,6])
+
+#         # iii: iii, IV, vi
+#         rows.extend([2]*2)
+#         cols.extend([3,5])
+
+#         # IV: I, ii, IV, V, vii0
+#         rows.extend([3]*4)
+#         cols.extend([0,1,4,6])
+
+#         # V: I, V, vi
+#         rows.extend([4]*2)
+#         cols.extend([0,5])
+
+#         # vi: ii, IV, vi
+#         rows.extend([5]*2)
+#         cols.extend([1,3])
+
+#         # vii0: I, vii0
+#         rows.extend([6]*1)
+#         cols.extend([0])
+
+#         t[rows, cols] = 1
+
+#         return t
+
+#     def initialize_parents(self, num_states, num_steps):
+#         p = np.empty((num_states, num_steps))
+#         p.fill(-1)
+#         return p
+
+#     def initialize_scores(self, num_states, num_steps):
+#         p = np.empty((num_states, num_steps))
+#         p.fill(-1)
+
+#         # initialize first column
+#         p[:,0].fill(1)
+#         return p
+
+#     def viterbi(self):
+#         # initialize
+#         scores = self.initialize_scores(self.s,self.n)
+#         parents = self.initialize_parents(self.s,self.n)
+#         transitions = self.build_transition_matrix()
+
+#         scores, parents = self.forward(transitions, scores, parents)
+#         sequence = self.backward(transitions, scores, parents)
+
+#         return sequence
+
+
+#     def forward(self, T, B, P):
+#         # B: best part ending at s at time i
+#         for i in xrange(1,self.n):
+#             for s in xrange(self.s):
+#                 print'T', T
+#                 print 'B',B
+#                 print 'P', P
+#                 print 'B[:,i-1]', B[:,i-1]
+#                 print 'T[:,i]', T[:,i]
+#                 print 'B[:,i-1]*T[:,s]', B[:,i-1]*T[:,i]
+#                 B[s,i] = np.max(B[:,i-1]*T[:,i])  # this should just be the nonzero ones
+#                 print 'B[s,i]', B[s,i]
+#                 P[s,i] = np.argmax(B[:,i-1]*T[:,s])
+#                 print'T', T
+#                 print 'B',B
+#                 print 'P', P
+#         assert False
+#         return B, P
+
+#     def backward(self, T, B, P):
+#         pass
+
 
 
 
@@ -141,6 +352,15 @@ class RomanNumeral(object):
                                'min': [0,3,7],
                                'aug': [0,4,8],
                                'dim': [0,3,6]}
+
+        # TODO: may have to fine-tune these mappings if we have inversions
+        self.rn_map = {'I': 0, 'ii': 2, 'iii': 4,
+                'IV': 5, 'V': 7, 'vi': 9, 'vii0': 11}
+
+        # scale degrees
+        # TODO: perhaps move this to ChordGraph
+        self.sd_map = {0:'I',1:'ii',2:'iii',3:'IV',4:'V',5:'vi',6:'vii0'}
+        self.sd_rev_map = {v:k for k,v in self.sd_map.items()}
 
     def get_rn_type(self, rn):
         if '+' in rn:
@@ -155,9 +375,10 @@ class RomanNumeral(object):
 
     def rn_root_lookup(self, rn):
         # Perhaps make this an attribute?
-        rn_map = {'I': 0, 'ii': 2, 'iii': 4,
-                'IV': 5, 'V': 7, 'vi': 9, 'vii0': 11}
-        return rn_map[rn]
+        return self.rn_map[rn]
+
+    def rn_reverse_lookup(self,idx):
+        return self.rn_rev_map[idx]
 
     def get_chord_notes(self, rn_root, rn_type):
         return [rn_root + x for x in self.note_intervals[rn_type]]
@@ -183,4 +404,8 @@ class PhraseBank(Graph):
         return self.bank
 
 
-
+# v = Viterbi()
+# t = v.build_transition_matrix()
+# print(v.initialize_parents(8,7))
+# print(v.initialize_scores(8,7))
+# v.viterbi()
