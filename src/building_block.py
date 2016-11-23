@@ -25,7 +25,7 @@ class Chord(BuildingBlock):
 
     def get_scale_root(self):
         # TODO: make this combined with RomanNumeral
-        rn_map = {'I': 0, 'ii': 2, 'iii': 4, 
+        rn_map = {'I': 0, 'ii': 2, 'iii': 4,
                 'IV': 5, 'V': 7, 'vi': 9, 'vii0': 11}
         return self.notes[0]-rn_map[self.name]
 
@@ -33,7 +33,7 @@ class Chord(BuildingBlock):
         self.notes = notes
 
     def get_notes(self, with_inversion=True):
-        # may be different from triad form 
+        # may be different from triad form
         if self.inversion == 'R' or self.inversion == '7' or not with_inversion:
             return self.notes
         elif self.inversion == '6' or self.inversion == '65':
@@ -78,4 +78,12 @@ class Phrase(BuildingBlock):
     def get_chords(self):
         return self.chords
 
+    def get_name(self):
+        # First chord's name then an arrow then the last chord's name.
+        if len(self.chords) == 0:
+            return "Empty"
+        elif len(self.chords) != 4 or len(self.chords) != 8:
+            raise Exception("Chord should only be of length 4 or 8.")
+        else:
+            return self.chords[0].get_name() + " -> " + self.chords[-1].get_name()
 

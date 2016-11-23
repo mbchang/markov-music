@@ -79,7 +79,7 @@ class ChordGraph(Graph):
     def make_selection(self, chord):
         self.chord_stack.append(chord)
 
-    # TODO: make an undo_constraint: 
+    # TODO: make an undo_constraint:
     # perhaps we can generate a stack of constraints: (chord_idx, original_vals, new_vals)
     # TODO: add safety mechanism such that the user cannot specify a constraint that kills all possible paths
     # TODO: if this is called by an outside method, then we'd need to figure out a mapping
@@ -129,7 +129,6 @@ class ChordGraph(Graph):
 
             TODO: can return other inversions
         """
-        print current_idx
         if current_idx == -1:
             assert chord is None
             sr = 60  # TODO: we should initialize graph with a key, or have a button that selects key
