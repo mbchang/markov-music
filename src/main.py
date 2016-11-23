@@ -43,7 +43,8 @@ class MarkovMusicWidget(BaseWidget):
 
     # Handle any key events.
     def on_key_down(self, keycode, modifiers):
-        self.toggle_mode()
+        pass
+        # self.toggle_mode()
 
     def on_key_up(self, keycode):
         pass
