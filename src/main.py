@@ -47,8 +47,6 @@ class MarkovMusicWidget(BaseWidget):
         
         if keycode[1] == 't':
             self.toggle_mode()
-        elif keycode[1] == 'a':
-            print 'yo'
 
     def on_key_up(self, keycode):
         pass
@@ -67,8 +65,11 @@ class MarkovMusicWidget(BaseWidget):
 
     def change_mode_p(self):
         self.cs.inactivate()
+        song = self.cs.get_song()
         self.cs_mode = False
         self.p.activate()
+        self.p.set_song(song)
+        self.p.play()
 
     # Need to update all components.
     def on_update(self):

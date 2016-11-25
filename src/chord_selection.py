@@ -78,6 +78,10 @@ class ChordSelection(object):
         chord = Chord()
         self.audio_control.play_chord(chord)
 
+    # temporary method
+    def get_song(self):
+        return Phrase(chords=[Chord(),Chord(),Chord(),Chord()])
+
     def activate(self):
         self.active = True
         print 'cs activate'

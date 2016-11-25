@@ -10,6 +10,10 @@ class Playback(object):
         self.display = display
 
         self.active = False
+        self.phrase = None
+
+    def set_song(self, phrase):
+        self.phrase = phrase
 
     def activate(self):
         self.active = True
@@ -20,6 +24,9 @@ class Playback(object):
         self.active = False
         print 'playback inactivate'
         self.display.inactivate()
+
+    def play(self):
+        self.audio_control.play_phrase(self.phrase)
 
     def on_update(self):
         dt = kivyClock.frametime

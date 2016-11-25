@@ -78,12 +78,19 @@ class Phrase(BuildingBlock):
     def get_chords(self):
         return self.chords
 
+    def add_chords(self, chord_list):
+        self.chords.extend(chord_list)
+
     def get_name(self):
         # First chord's name then an arrow then the last chord's name.
         if len(self.chords) == 0:
             return "Empty"
-        elif len(self.chords) != 4 or len(self.chords) != 8:
-            raise Exception("Chord should only be of length 4 or 8.")
+        # i removed this because i think the phrase should also be able
+        # to encapsulate the idea of a song, so we can build a song up by
+        # concatenating phrases together into a phrase -taylor
+        # elif len(self.chords) != 4 or len(self.chords) != 8:
+        #     raise Exception("Chord should only be of length 4 or 8.")
         else:
             return self.chords[0].get_name() + " -> " + self.chords[-1].get_name()
+
 

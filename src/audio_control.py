@@ -29,6 +29,9 @@ class AudioController(object):
     def transpose(self, steps):
         self.transpose_steps += steps
 
+    def play_phrase(self, phrase):
+        self.play_progression(phrase.get_chords())
+
     def play_progression(self, chords):
         now = self.sched.get_tick()
         now = now - (now % kTicksPerQuarter) + kTicksPerQuarter
