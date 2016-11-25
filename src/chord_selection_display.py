@@ -20,6 +20,14 @@ class ChordSelectionScreen(Widget):
         self.current_progression_layout.reset()
         self.chord_selection_layout.reset()
 
+    def inactivate(self):
+        self.remove_widget(self.current_progression_layout)
+        self.remove_widget(self.chord_selection_layout)
+
+    def activate(self):
+        self.add_widget(self.current_progression_layout)
+        self.add_widget(self.chord_selection_layout)
+
     def set_chords(self, chords):
         self.chord_selection_layout.set_chords(chords)
 

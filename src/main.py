@@ -28,12 +28,13 @@ class MarkovMusicWidget(BaseWidget):
         self.cs_display = ChordSelectionScreen()
         self.add_widget(self.cs_display)
 
-        # self.p_display = PlaybackDisplay()
+
         # self.canvas.add(self.p_display)
+        self.p_display = PlaybackDisplay()
 
         # Two main modes. ChordSelection and Playback.
         self.cs = ChordSelection(self.audio_control, self.cs_display)
-        # self.p = Playback(self.audio_control, self.p_display)
+        self.p = Playback(self.audio_control, self.p_display)
 
         # Flag for which mode we are in.
         # True = chord selection, False = playback.
@@ -43,8 +44,11 @@ class MarkovMusicWidget(BaseWidget):
 
     # Handle any key events.
     def on_key_down(self, keycode, modifiers):
-        pass
-        # self.toggle_mode()
+        
+        if keycode[1] == 't':
+            self.toggle_mode()
+        elif keycode[1] == 'a':
+            print 'yo'
 
     def on_key_up(self, keycode):
         pass
