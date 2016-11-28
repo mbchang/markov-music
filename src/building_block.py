@@ -17,7 +17,9 @@ class BuildingBlock(object):
 class Chord(BuildingBlock):
     def __init__(self, notes=[60, 64, 67], name='I',inversion='R'):
         super(Chord, self).__init__()
-        self.notes = notes  # always in canonical triad form
+        # always represent chord in canonical triad form
+        # use expand_chord() to generate other notes
+        self.notes = notes  
         self.name = name
         self.root = notes[0]
         self.inversion = inversion
@@ -50,21 +52,44 @@ class Chord(BuildingBlock):
         possible_melody_notes = [x+root_note for x in base_notes]
         return possible_melody_notes
 
-
-
     def set_notes(self, notes):
         self.notes = notes
 
-    def get_notes(self, with_inversion=True):
+    def get_notes(self):
         # may be different from triad form
-        if self.inversion == 'R' or self.inversion == '7' or not with_inversion:
-            return self.notes
+        if self.inversion == 'R' or self.inversion == '7':
+            # return self.notes
+            notes = self.notes
         elif self.inversion == '6' or self.inversion == '65':
-            return self.notes[1:]+self.notes[0]
+            # return self.notes[1:]+self.notes[0]
+            notes = self.notes[1:]+self.notes[0]
         elif self.inversion == '64' or self.inversion == '43':
-            return self.notes[2:]+self.notes[:1]
+            # return self.notes[2:]+self.notes[:1]
+            notes = self.notes[2:]+self.notes[:1]
         elif self.inversion == '2':
-            return self.notes[3:]+self.notes[:2]
+            # return self.notes[3:]+self.notes[:2]
+            notes = self.notes[3:]+self.notes[:2]
+
+        return self.expand_chord(notes)
+
+    def set_inversion(self):
+        pass
+
+    def expand_chord(self, notes):
+        """
+        Take canonical triad form and expand to different notes
+
+        not sure if notes is the correct arguments
+        """
+
+        # hacky
+        addition1 = [n + 12 for n in notes]
+        addition2 = [n - 12 for n in notes]
+        addition3 = [n + 24 for n in notes]
+        addition4 = [n - 24 for n in notes]
+
+        return notes + addition1 + addition2 + addition3 + addition4
+
 
     def get_chords(self):
         return [self]
