@@ -68,13 +68,48 @@ class Chord(BuildingBlock):
 
         return self.expand_chord(notes)
 
+    def get_bottom(self):
+        if self.inversion == 'R' or self.inversion == '7':
+            note = self.notes[0]
+        elif self.inversion == '6' or self.inversion == '65':
+            note = self.notes[1]
+        elif self.inversion == '64' or self.inversion == '43':
+            note = self.notes[2]
+        elif self.inversion == '2':
+            note = self.notes[3]
+
+        return note
+
+    def get_middle(self):
+        if self.inversion == 'R' or self.inversion == '7':
+            note = self.notes[1]
+        elif self.inversion == '6' or self.inversion == '65':
+            note = self.notes[2]
+        elif self.inversion == '64' or self.inversion == '43':
+            note = self.notes[0]
+        elif self.inversion == '2':
+            note = self.notes[0]  # TODO
+
+        return note
+
+    def get_top(self):
+        if self.inversion == 'R' or self.inversion == '7':
+            note = self.notes[2]
+        elif self.inversion == '6' or self.inversion == '65':
+            note = self.notes[0]
+        elif self.inversion == '64' or self.inversion == '43':
+            note = self.notes[1]
+        elif self.inversion == '2':
+            note = self.notes[1]  # TODO
+
+        return note
+
     def expand_chord(self, notes):
         """
         Take canonical triad form and expand to different notes
         
         preserve root, but can be different octave
         """
-
         # hacky
         addition1 = [n + 12 for n in notes]
         addition2 = [n - 12 for n in notes]
