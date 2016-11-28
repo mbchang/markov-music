@@ -90,7 +90,12 @@ class ChordSelection(object):
                     self.display.set_chords(self.phrase_bank.get_children(self.song_builder.get_last_block()))
 
     def on_play_button_click(self, instance):
-        self.audio_control.play_preview(self.block_builder.get_flattened_chords())
+        if self.mode == 'chords':
+            self.audio_control.play_preview(self.block_builder.get_flattened_chords())
+        elif self.mode == 'phrases':
+            self.audio_control.play_preview(self.song_builder.get_flattened_chords())
+        else:
+            raise ModeException()
 
     def on_node_button_click(self, instance):
         if self.mode == 'chords':
@@ -113,6 +118,8 @@ class ChordSelection(object):
             self.display.add_node_to_progression(instance.block, self.mode)
             # Update the next options.
             self.display.set_chords(self.phrase_bank.get_children(instance.block))
+        else:
+            raise ModeException()
 
     def toggle_save_button(self):
         if self.block_builder.get_num_blocks() == 4 or self.block_builder.get_num_blocks() == 8:
@@ -143,7 +150,7 @@ class ChordSelection(object):
             self.mode = 'phrases'
             self.load_phrase_builder()
         else:
-            raise ModeExcepetion()
+            raise ModeException()
 
     # Just a testing function.
     def test_play_note(self):
