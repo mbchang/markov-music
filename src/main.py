@@ -22,7 +22,7 @@ class MarkovMusicWidget(BaseWidget):
 
         # An info display, for debugging and possibly for actual info.
         self.info = topleft_label()
-        # self.add_widget(self.info)
+        self.add_widget(self.info)
 
         # Create an instance of each display and add to canvas.
         self.cs_display = ChordSelectionScreen()
@@ -48,6 +48,9 @@ class MarkovMusicWidget(BaseWidget):
 
         if keycode[1] == 't':
             self.toggle_mode()
+            self.audio_control.toggle_setting("selection")
+        if keycode[1] == 'a':
+            self.audio_control.toggle_setting("arpeggiator")
 
     def on_touch_down(self, touch):
         if self.cs_mode:
@@ -62,6 +65,7 @@ class MarkovMusicWidget(BaseWidget):
     def toggle_mode(self):
         if self.cs_mode:
             self.change_mode_p()
+            self.audio_control.clear_previous_previews()
         else:
             self.change_mode_cs()
 
@@ -80,12 +84,13 @@ class MarkovMusicWidget(BaseWidget):
 
     # Need to update all components.
     def on_update(self):
-        self.info.text = "Markov Music!"
-
+        self.info.text = ""
         if self.cs_mode:
             self.cs.on_update()
         else:
             self.p.on_update()
+            self.info.text = "Playback Mode"
+            self.info.text = "a for arpeggiator"
 
 # Set to full screen (commented out because unnecessary while developing).
 # Config.set('graphics', 'fullscreen', 0)

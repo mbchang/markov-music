@@ -27,6 +27,7 @@ class AudioController(object):
         self.tick_duration = 60./self.bpm / kTicksPerQuarter
 
         self.time_chords = []
+        self.setting = "selection"
 
         # Keep track of current preview cmds.
         self.previews = []
@@ -92,8 +93,44 @@ class AudioController(object):
         duration = note_duration_tuple[1]
         self.play_note(note, duration=duration, synth_settings = (0, 5))
 
+    def play_scheduled_bass_note(self, tick, note_duration_tuple):
+        note = note_duration_tuple[0]
+        duration = note_duration_tuple[1]
+        self.play_note(note, duration=duration, synth_settings = (0, 1))
+
+
     def play_scheduled_chord(self, tick, chord):
-        self.play_chord(chord, .9)
+        if self.setting == "selection":
+            self.play_chord(chord, kTicksPerQuarter * self.tick_duration * 0.9)
+        if self.setting == "basic":
+            self.play_chord(chord, kTicksPerQuarter * self.tick_duration * 4)
+        if self.setting == "arpeggiator":
+            self.play_arpeg_chord(chord)
+
+    def play_arpeg_chord(self, chord):
+        time = self.sched.get_tick()
+        for i in range(4):
+            note = chord.get_bottom() - 12
+            self.sched.post_at_tick(time,self.play_scheduled_bass_note, (note, kTicksPerQuarter * self.tick_duration / 4))
+            time += kTicksPerQuarter/4            
+            note = chord.get_middle() - 12
+            self.sched.post_at_tick(time,self.play_scheduled_bass_note, (note, kTicksPerQuarter * self.tick_duration / 4))
+            time += kTicksPerQuarter/4
+            note = chord.get_top() - 12
+            self.sched.post_at_tick(time,self.play_scheduled_bass_note, (note, kTicksPerQuarter * self.tick_duration / 4))
+            time += kTicksPerQuarter/4
+            note = chord.get_bottom() 
+            self.sched.post_at_tick(time,self.play_scheduled_bass_note, (note, kTicksPerQuarter * self.tick_duration / 4))
+            time += kTicksPerQuarter/4
+
+    def set_setting(self, setting):
+        self.setting = setting
+
+    def toggle_setting(self, setting):
+        if self.setting == setting:
+            self.setting = "basic"
+        else:
+            self.setting = setting
 
     def play_chord(self, chord, duration=1):
         notes = chord.get_notes()
