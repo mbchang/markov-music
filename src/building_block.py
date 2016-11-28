@@ -55,7 +55,6 @@ class Chord(BuildingBlock):
     def set_notes(self, notes):
         self.notes = notes
 
-
     def _get_canonical_notes(self):
         # may be different from triad form
         if self.inversion == 'R' or self.inversion == '7':
@@ -96,7 +95,6 @@ class Chord(BuildingBlock):
         addition2 = [n - 12 for n in notes]
         addition3 = [n + 24 for n in notes]
         addition4 = [n - 24 for n in notes]
-
         return notes + addition1 + addition2 + addition3 + addition4
 
 

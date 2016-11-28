@@ -141,8 +141,8 @@ class ChordGraph(Graph):
 
     def _sample_first_chords(self):
         sr = self.scale_root
-        # common_first_notes = ['I','IV','V','vi']
-        common_first_notes = ['I','ii','iii','IV','V','vi','vii0']
+        # common_first_notes = ['I','ii','iii','IV','V','vi','vii0']
+        common_first_notes = ['I']
         first_chords = [self._generate_chord(n, sr, 'R') for n in common_first_notes]
         return first_chords
 
