@@ -8,7 +8,7 @@ class ChordSelectionScreen(Widget):
     def __init__(self):
         super(ChordSelectionScreen, self).__init__()
 
-        # Contains two layouts.
+        # Contains two layouts, each that has a change mode button.
         self.current_progression_layout = CurrentProgressionLayout((20, Window.height - 200),
                                                                    (Window.width - 40, 200))
         self.chord_selection_layout = ChordSelectionLayout((20, 20),
@@ -34,6 +34,9 @@ class ChordSelectionScreen(Widget):
     def pop_preview_button(self):
         self.current_progression_layout.pop_preview_button()
 
+    def set_change_mode_button_callback(self, callback):
+        self.chord_selection_layout.set_change_mode_button_callback(callback)
+
     def set_preview_button_callback(self, callback):
         self.current_progression_layout.set_preview_button_callback(callback)
 
@@ -49,8 +52,8 @@ class ChordSelectionScreen(Widget):
     def set_save_button_callback(self, callback):
         self.current_progression_layout.set_save_button_callback(callback)
 
-    def add_node_to_progression(self, chord):
-        self.current_progression_layout.add_preview_button(chord)
+    def add_node_to_progression(self, block, mode):
+        self.current_progression_layout.add_preview_button(block, mode)
 
     def set_phrase_length(self, phrase_length):
         self.current_progression_layout.set_phrase_length(phrase_length)
@@ -60,6 +63,12 @@ class ChordSelectionScreen(Widget):
 
     def hide_save_button(self):
         self.current_progression_layout.hide_save_button()
+
+    def show_change_mode_button(self):
+        self.chord_selection_layout.show_change_mode_button()
+
+    def hide_change_mode_button(self):
+        self.chord_selection_layout.hide_chnage_mode_button()
 
     def on_update(self, dt):
         pass
@@ -73,8 +82,10 @@ class CurrentProgressionLayout(RelativeLayout):
         self.canvas.add(Color(1.0, 0, 0))
         self.canvas.add(Rectangle(size=self.size))
 
+        # Add preview buttons (to play the chord when clicked).
         self.preview_buttons = []
         self.preview_button_callback = None
+        self.max_blocks = 40
 
         # Add menu buttons.
         play_pos_hint = {'center_x': .9, 'center_y': .25}
@@ -97,14 +108,28 @@ class CurrentProgressionLayout(RelativeLayout):
             self.remove_widget(button)
         self.preview_buttons = []
 
-    def add_preview_button(self, chord):
-        # TODO: buttons are not vertically centered.
-        pos_hint = {'center_x': .8*((1.0 + len(self.preview_buttons))/(1.0+self.phrase_length)), 'center_y': .5}
-        size_hint = (1.0/(1 + self.phrase_length)*.75, .8)
-        preview_button = NodeButton(pos_hint, size_hint, chord)
+    def add_preview_button(self, block, mode):
+        if len(self.preview_buttons) >= self.max_blocks:
+            print "Cannot add, max number of blocks reached!"
+            return
+        if mode == 'chords':
+            # TODO: buttons are not vertically centered.
+            pos_hint = {'center_x': .8*((1.0 + len(self.preview_buttons))/(1.0+self.phrase_length)), 'center_y': .5}
+            size_hint = (1.0/(1 + self.phrase_length)*.75, .8)
+        elif mode == 'phrases':
+            row = int(len(self.preview_buttons) / self.phrase_length)
+            print 'row', row
+            col = len(self.preview_buttons) % self.phrase_length
+            x_pos = .8*((1.0 + col)/(1.0+self.phrase_length))
+            pos_hint = {'center_x': x_pos, 'center_y': 1 - .15 * (row + 1)}
+            size_hint = (1.0/(1 + self.phrase_length)*.75, .15)
+        else:
+            raise Exception('Bad mode.')
+        preview_button = NodeButton(pos_hint, size_hint, block)
         self.preview_buttons.append(preview_button)
         self.add_widget(preview_button)
         preview_button.set_callback(self.preview_button_callback)
+
 
     def pop_preview_button(self):
         self.remove_widget(self.preview_buttons.pop())
@@ -131,16 +156,6 @@ class CurrentProgressionLayout(RelativeLayout):
         self.remove_widget(self.save_button)
 
 
-class MenuButton(Button):
-    def __init__(self, pos_hint, size_hint, label):
-        super(MenuButton, self).__init__(pos_hint=pos_hint, size_hint=size_hint, text=label)
-        self.callback = None
-
-    def set_callback(self, callback):
-        self.callback = callback
-        self.bind(on_press=self.callback)
-
-
 class ChordSelectionLayout(RelativeLayout):
     def __init__(self, pos, size):
         super(ChordSelectionLayout, self).__init__()
@@ -148,6 +163,13 @@ class ChordSelectionLayout(RelativeLayout):
         self.size = size
         self.canvas.add(Color(0, 0, 1.0))
         self.canvas.add(Rectangle(size=self.size))
+
+        # Add a change mode button that switches the app between building chords
+        # to building phrases.
+        mode_button_pos = {'center_x': .8, 'center_y': .1}
+        mode_button_size = (.2, .1)
+        self.change_mode_button = ChangeModeButton(mode_button_pos, mode_button_size,
+                                                   'Change Mode')
 
         self.node_button_callback = None
         self.chords = []
@@ -173,13 +195,23 @@ class ChordSelectionLayout(RelativeLayout):
             button.set_callback(self.node_button_callback)
             self.add_widget(button)
 
+    def show_change_mode_button(self):
+        self.add_widget(self.change_mode_button)
+
+    def hide_change_mode_button(self):
+        self.remove_widget(self.change_mode_button)
+
     def set_node_button_callback(self, callback):
         self.node_button_callback = callback
 
-class NodeButton(Button):
-    def __init__(self, pos_hint, size_hint, chord):
-        super(NodeButton, self).__init__(pos_hint=pos_hint, size_hint=size_hint, text=chord.get_name())
-        self.chord = chord
+    def set_change_mode_button_callback(self, callback):
+        self.change_mode_button.set_callback(callback)
+
+class ChangeModeButton(Button):
+    def __init__(self, pos_hint, size_hint, label):
+        super(Button, self).__init__(pos_hint=pos_hint, size_hint=size_hint, text=label)
+        # self.background_normal = ''
+        self.background_color = [0, 1.0, 1.0, 1]
 
     def set_callback(self, callback):
         self.bind(on_press=callback)

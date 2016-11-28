@@ -43,6 +43,9 @@ class Chord(BuildingBlock):
         elif self.inversion == '2':
             return self.notes[3:]+self.notes[:2]
 
+    def get_chords(self):
+        return [self]
+
     def set_name(self):
         self.name = name
 

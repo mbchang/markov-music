@@ -23,6 +23,9 @@ class AudioController(object):
         self.audio.set_generator(self.sched)
         self.sched.set_generator(self.synth)
 
+        # Keep track of current preview cmds.
+        self.previews = []
+
         # Set up ability to modulate.
         self.transpose_steps = 0
 
@@ -39,6 +42,20 @@ class AudioController(object):
             chord = chords[chord_idx]
             time = now + chord_idx * kTicksPerQuarter
             self.sched.post_at_tick(time, self.play_scheduled_chord, chord)
+
+    def play_preview(self, chords):
+        self.clear_previous_previews()
+        now = self.sched.get_tick()
+        now = now - (now % kTicksPerQuarter) + kTicksPerQuarter
+        for chord_idx in range(len(chords)):
+            chord = chords[chord_idx]
+            time = now + chord_idx * kTicksPerQuarter
+            self.previews.append(self.sched.post_at_tick(time, self.play_scheduled_chord, chord))
+
+    def clear_previous_previews(self):
+        for preview_cmd in self.previews:
+            self.sched.remove(preview_cmd)
+        self.previews = []
 
     def play_scheduled_chord(self, tick, chord):
         self.play_chord(chord, .9)

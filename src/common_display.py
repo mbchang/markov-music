@@ -12,6 +12,25 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.button import Button
 
+# A menu button.
+class MenuButton(Button):
+    def __init__(self, pos_hint, size_hint, label):
+        super(MenuButton, self).__init__(pos_hint=pos_hint, size_hint=size_hint, text=label)
+        self.callback = None
+
+    def set_callback(self, callback):
+        self.callback = callback
+        self.bind(on_press=self.callback)
+
+# A button representing a node in the graph (either a chord or phrase.)
+class NodeButton(Button):
+    def __init__(self, pos_hint, size_hint, block):
+        super(NodeButton, self).__init__(pos_hint=pos_hint, size_hint=size_hint, text=block.get_name())
+        self.block = block
+
+    def set_callback(self, callback):
+        self.bind(on_press=callback)
+
 # A generic bubble.
 class Bubble(InstructionGroup):
     def __init__(self, pos, rgb, size):
@@ -36,4 +55,5 @@ class Bubble(InstructionGroup):
 
     def on_update(self, dt):
         pass
+
 

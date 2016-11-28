@@ -44,8 +44,8 @@ class ChordGraph(Graph):
             rows, cols = [],[]
 
             # I: I, ii, iii, IV, V, vi, vii0
-            rows.extend([0]*6)
-            cols.extend(range(1,7))
+            rows.extend([0]*7)
+            cols.extend(range(0,7))
 
             # ii: ii, V, vii0
             rows.extend([1]*2)
@@ -134,12 +134,25 @@ class ChordGraph(Graph):
             sr = 60  # TODO: we should initialize graph with a key, or have a button that selects key
             return [self._generate_chord('I', sr, 'R')] # TODO can make this more interesting
         else:
+            # TODO: maybe just replace this with a call to get_children_no_constraint()
             sr = chord.get_scale_root()
             chord_idx = self.rn.sd_rev_map[chord.get_name()]
             children_idx = list(self.C[current_idx, chord_idx].nonzero()[0])
             children = [self._generate_chord(self.rn.sd_map[ci], sr, 'R') for ci in children_idx]
             return children
 
+
+    # Get the possible chords based on only the chord transition rules.
+    def get_children_no_constraint(self, chord):
+        sr = chord.get_scale_root()
+        chord_idx = self.rn.sd_rev_map[chord.get_name()]
+        transition_row = self.TM[chord_idx, :]
+        children_idx = []
+        for i in xrange(len(transition_row)):
+            if transition_row[i] == 1:
+                children_idx.append(i)
+        children = [self._generate_chord(self.rn.sd_map[ci], sr, 'R') for ci in children_idx]
+        return children
 
     # need to generate notes given roman numeral, scale root, and inversion
     def _generate_chord(self, rn, sr, inv):
@@ -306,10 +319,20 @@ class PhraseBank(Graph):
 
     def get_children(self, phrase):
         children = []
-        for next_chord in self.chord_graph.get_children(phrase.get_end()):
-            children += self.prefixes[next_chord.get_name()]
+        for next_chord in self.chord_graph.get_children_no_constraint(phrase.get_end()):
+            if next_chord.get_name() in self.prefixes:
+                children += self.prefixes[next_chord.get_name()]
         return children
 
     def get_phrases(self):
         return self.bank
+
+    def get_num_phrases(self):
+        return len(self.bank)
+
+    # Returns the options for the first phrase of a song.
+    def get_starting_phrases(self):
+        # For now, say that we can start the song with any phrase that begins
+        # with a I chord.
+        return self.prefixes[Chord().get_name()]
 

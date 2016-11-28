@@ -22,44 +22,98 @@ class ChordSelection(object):
         self.display.set_undo_button_callback(self.on_undo_button_click)
         self.display.set_save_button_callback(self.on_save_button_click)
         self.display.set_preview_button_callback(self.on_preview_button_click)
+        self.display.set_change_mode_button_callback(self.on_change_mode_button_click)
         self.display.set_phrase_length(self.phrase_length)
-        self.block_builder = BlockBuilder()
+
+        # The block_builder builds phrases together and clears after each
+        # phrase is made.
+        # The song_builder builds the entire song and persistently stores it.
+        self.block_builder = BlockBuilder(phrase_length=8)
+        self.song_builder = BlockBuilder()
 
         self.active = False
+
+        # Mode is either 'chords' or 'phrases'
+        self.mode = 'chords'
 
         # Initialize some chords.
         self.display.set_chords(self.graph.get_children())
 
-    def on_save_button_click(self, instance):
-        self.phrase_bank.add_to_bank(Phrase(self.block_builder.get_current_blocks()))
-        # After saving, reset everything.
+    # Reset the display to the beginning of chord building.
+    # Does not erase the entire song, because the entire song is persistent
+    # and we may want to switch back to it later.
+    def reset_chord_building(self):
         self.graph.reset()
         self.display.reset()
         self.display.set_chords(self.graph.get_children())
         self.block_builder.clear_blocks()
 
+    # Loads phrase building mode, takes existing phrases in the song
+    # and displays them so the user can pick up where they left off.
+    def load_phrase_builder(self):
+        self.reset_chord_building()
+        # Add all the phrases that are already in the song.
+        for phrase in self.song_builder.get_current_blocks():
+            self.display.add_node_to_progression(phrase, self.mode)
+        # Display the correct next options.
+        if self.song_builder.get_num_blocks() > 0:
+            self.display.set_chords(self.phrase_bank.get_children(self.song_builder.get_last_block()))
+        else:
+            self.display.set_chords(self.phrase_bank.get_starting_phrases())
+
+    def on_save_button_click(self, instance):
+        if self.mode == 'chords':
+            self.phrase_bank.add_to_bank(Phrase(self.block_builder.get_current_blocks()))
+            # After saving, reset everything.
+            self.reset_chord_building()
+            # If this was the first phrase we added, we can now show the change mode
+            # button. And from here on out, it just stays visible.
+            if self.phrase_bank.get_num_phrases() == 1:
+                self.display.show_change_mode_button()
+        elif self.mode == 'phrases':
+            pass
+        else:
+            raise ModeException()
+
     def on_undo_button_click(self, instance):
-        if self.block_builder.remove_block() is not None:
-            self.display.pop_preview_button()
-            self.graph.undo_selection()
-            self.display.set_chords(self.graph.get_children())
-            self.toggle_save_button()
+        if self.mode == 'chords':
+            if self.block_builder.remove_block() is not None:
+                self.display.pop_preview_button()
+                self.graph.undo_selection()
+                self.display.set_chords(self.graph.get_children())
+                self.toggle_save_button()
+        elif self.mode == 'phrases':
+            if self.song_builder.remove_block() is not None:
+                self.display.pop_preview_button()
+                if self.song_builder.get_num_blocks() == 0:
+                    self.display.set_chords(self.phrase_bank.get_starting_phrases())
+                else:
+                    self.display.set_chords(self.phrase_bank.get_children(self.song_builder.get_last_block()))
 
     def on_play_button_click(self, instance):
-        self.audio_control.play_progression(self.block_builder.get_current_blocks())
+        self.audio_control.play_preview(self.block_builder.get_flattened_chords())
 
     def on_node_button_click(self, instance):
-        self.audio_control.play_chord(instance.chord)
-        # Make a selection: update both the block builder and the display.
-        if self.block_builder.add_block(instance.chord) < 0:
-            # Already at max phrase length.
-            return
-        self.display.add_node_to_progression(instance.chord)
-        # Get next set of possible chords.
-        self.graph.make_selection(instance.chord)
-        self.display.set_chords(self.graph.get_children())
-        # Show save button only when length of current phrase is 4 or 8.
-        self.toggle_save_button()
+        if self.mode == 'chords':
+            self.audio_control.play_chord(instance.block)
+            # Make a selection: update both the block builder and the display.
+            if self.block_builder.add_block(instance.block) < 0:
+                # Already at max phrase length.
+                return
+            self.display.add_node_to_progression(instance.block, self.mode)
+            # Get next set of possible chords.
+            self.graph.make_selection(instance.block)
+            self.display.set_chords(self.graph.get_children())
+            # Show save button only when length of current phrase is 4 or 8.
+            self.toggle_save_button()
+        elif self.mode == 'phrases':
+            self.audio_control.play_preview(instance.block.get_chords())
+            if self.song_builder.add_block(instance.block) < 0:
+                return
+            # Add this phrase.
+            self.display.add_node_to_progression(instance.block, self.mode)
+            # Update the next options.
+            self.display.set_chords(self.phrase_bank.get_children(instance.block))
 
     def toggle_save_button(self):
         if self.block_builder.get_num_blocks() == 4 or self.block_builder.get_num_blocks() == 8:
@@ -68,7 +122,29 @@ class ChordSelection(object):
             self.display.hide_save_button()
 
     def on_preview_button_click(self, instance):
-        self.audio_control.play_chord(instance.chord)
+        if self.mode == 'chords':
+            self.audio_control.play_chord(instance.block)
+        elif self.mode == 'phrases':
+            self.audio_control.play_preview(instance.block.get_chords())
+        else:
+            raise ModeException()
+
+    def on_change_mode_button_click(self, instance):
+        # Toggle mode.
+        if self.mode == 'phrases':
+            print 'changing mode to chords'
+            # Switch back to chord building mode.
+            self.reset_chord_building()
+            self.audio_control.clear_previous_previews()
+            self.mode = 'chords'
+        elif self.mode == 'chords':
+            print 'changing mode to phrases'
+            # Switch back to phrase building mode.
+            # Requires reloading the previously saved song.
+            self.load_phrase_builder()
+            self.mode = 'phrases'
+        else:
+            raise ModeExcepetion()
 
     # Just a testing function.
     def test_play_note(self):
@@ -100,3 +176,7 @@ class ChordSelection(object):
         dt = kivyClock.frametime
         self.display.on_update(dt)
         self.audio_control.on_update()
+
+class ModeException(Exception):
+    def __init__(self, text=''):
+        super(ModeException, self).__init__('Mode should be one of phrases or chords. ' + text)
