@@ -32,7 +32,7 @@ class AudioController(object):
         self.previews = []
 
         # Set up ability to modulate.
-        self.transpose_steps = 0
+        self.transpose_steps = 60
 
     def transpose(self, steps):
         self.transpose_steps += steps

@@ -58,28 +58,21 @@ class Chord(BuildingBlock):
     def get_notes(self):
         # may be different from triad form
         if self.inversion == 'R' or self.inversion == '7':
-            # return self.notes
             notes = self.notes
         elif self.inversion == '6' or self.inversion == '65':
-            # return self.notes[1:]+self.notes[0]
             notes = self.notes[1:]+self.notes[0]
         elif self.inversion == '64' or self.inversion == '43':
-            # return self.notes[2:]+self.notes[:1]
             notes = self.notes[2:]+self.notes[:1]
         elif self.inversion == '2':
-            # return self.notes[3:]+self.notes[:2]
             notes = self.notes[3:]+self.notes[:2]
 
         return self.expand_chord(notes)
 
-    def set_inversion(self):
-        pass
-
     def expand_chord(self, notes):
         """
         Take canonical triad form and expand to different notes
-
-        not sure if notes is the correct arguments
+        
+        preserve root, but can be different octave
         """
 
         # hacky
@@ -105,6 +98,9 @@ class Chord(BuildingBlock):
 
     def get_inversion(self):
         return self.inversion
+
+    def set_inversion(self, inversion):
+        self.inversion = inversion
 
 
 

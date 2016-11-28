@@ -21,6 +21,7 @@ class ChordGraph(Graph):
         # The last element of self.chord_stack is the current chord.
         self.chord_stack = []
         self.rn = RomanNumeral()
+        self.scale_root = 0  # TODO change this to 
 
         self.T = 8
         self.S = 7
@@ -131,15 +132,17 @@ class ChordGraph(Graph):
         """
         if current_idx == -1:
             assert chord is None
-            sr = 60  # TODO: we should initialize graph with a key, or have a button that selects key
+            sr = self.scale_root#60  # TODO: we should initialize graph with a key, or have a button that selects key
             return [self._generate_chord('I', sr, 'R')] # TODO can make this more interesting
         else:
-            # TODO: maybe just replace this with a call to get_children_no_constraint()
             sr = chord.get_scale_root()
             chord_idx = self.rn.sd_rev_map[chord.get_name()]
             children_idx = list(self.C[current_idx, chord_idx].nonzero()[0])
             children = [self._generate_chord(self.rn.sd_map[ci], sr, 'R') for ci in children_idx]
             return children
+
+
+    # def _sample_first_RN
 
 
     # Get the possible chords based on only the chord transition rules.
