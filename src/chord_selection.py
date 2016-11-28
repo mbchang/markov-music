@@ -140,8 +140,8 @@ class ChordSelection(object):
             print 'changing mode to phrases'
             # Switch back to phrase building mode.
             # Requires reloading the previously saved song.
-            self.load_phrase_builder()
             self.mode = 'phrases'
+            self.load_phrase_builder()
         else:
             raise ModeExcepetion()
 
