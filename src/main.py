@@ -22,7 +22,7 @@ class MarkovMusicWidget(BaseWidget):
 
         # An info display, for debugging and possibly for actual info.
         self.info = topleft_label()
-        self.add_widget(self.info)
+        # self.add_widget(self.info)
 
         # Create an instance of each display and add to canvas.
         self.cs_display = ChordSelectionScreen()
