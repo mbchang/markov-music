@@ -21,7 +21,7 @@ class ChordGraph(Graph):
         # The last element of self.chord_stack is the current chord.
         self.chord_stack = []
         self.rn = RomanNumeral()
-        self.scale_root = 0  # TODO change this to 
+        self.scale_root = 0  # normalized
 
         self.T = 8
         self.S = 7
@@ -142,9 +142,6 @@ class ChordGraph(Graph):
             return children
 
 
-    # def _sample_first_RN
-
-
     # Get the possible chords based on only the chord transition rules.
     def get_children_no_constraint(self, chord):
         sr = chord.get_scale_root()
@@ -168,103 +165,6 @@ class ChordGraph(Graph):
         chord_root = self.rn.rn_root_lookup(rn) + sr
         chord_notes = self.rn.get_chord_notes(chord_root, self.rn.get_rn_type(rn))
         return Chord(chord_notes, rn, inv)
-
-
-# # under construction
-# class Viterbi(object):
-#     def __init__(self):
-#         super(Viterbi, self).__init__()
-#         self.t = self.build_transition_matrix()
-#         self.n = 8  # length 8
-#         self.s = 7  # 7 states
-
-#     def build_transition_matrix(self):
-#         # t[i,j] is prob i transitions to j
-#         # we do not allow self loops for now
-
-#         t = np.zeros((7,7))
-
-#         rows, cols = [],[]
-
-#         # I: I, ii, iii, IV, V, vi, vii0
-#         rows.extend([0]*6)
-#         cols.extend(range(1,7))
-
-#         # ii: ii, V, vii0
-#         rows.extend([1]*2)
-#         cols.extend([4,6])
-
-#         # iii: iii, IV, vi
-#         rows.extend([2]*2)
-#         cols.extend([3,5])
-
-#         # IV: I, ii, IV, V, vii0
-#         rows.extend([3]*4)
-#         cols.extend([0,1,4,6])
-
-#         # V: I, V, vi
-#         rows.extend([4]*2)
-#         cols.extend([0,5])
-
-#         # vi: ii, IV, vi
-#         rows.extend([5]*2)
-#         cols.extend([1,3])
-
-#         # vii0: I, vii0
-#         rows.extend([6]*1)
-#         cols.extend([0])
-
-#         t[rows, cols] = 1
-
-#         return t
-
-#     def initialize_parents(self, num_states, num_steps):
-#         p = np.empty((num_states, num_steps))
-#         p.fill(-1)
-#         return p
-
-#     def initialize_scores(self, num_states, num_steps):
-#         p = np.empty((num_states, num_steps))
-#         p.fill(-1)
-
-#         # initialize first column
-#         p[:,0].fill(1)
-#         return p
-
-#     def viterbi(self):
-#         # initialize
-#         scores = self.initialize_scores(self.s,self.n)
-#         parents = self.initialize_parents(self.s,self.n)
-#         transitions = self.build_transition_matrix()
-
-#         scores, parents = self.forward(transitions, scores, parents)
-#         sequence = self.backward(transitions, scores, parents)
-
-#         return sequence
-
-
-#     def forward(self, T, B, P):
-#         # B: best part ending at s at time i
-#         for i in xrange(1,self.n):
-#             for s in xrange(self.s):
-#                 print'T', T
-#                 print 'B',B
-#                 print 'P', P
-#                 print 'B[:,i-1]', B[:,i-1]
-#                 print 'T[:,i]', T[:,i]
-#                 print 'B[:,i-1]*T[:,s]', B[:,i-1]*T[:,i]
-#                 B[s,i] = np.max(B[:,i-1]*T[:,i])  # this should just be the nonzero ones
-#                 print 'B[s,i]', B[s,i]
-#                 P[s,i] = np.argmax(B[:,i-1]*T[:,s])
-#                 print'T', T
-#                 print 'B',B
-#                 print 'P', P
-#         assert False
-#         return B, P
-
-#     def backward(self, T, B, P):
-#         pass
-
 
 
 class RomanNumeral(object):
