@@ -27,10 +27,13 @@ class Chord(BuildingBlock):
         # TODO: make this combined with RomanNumeral
         rn_map = {'I': 0, 'ii': 2, 'iii': 4,
                 'IV': 5, 'V': 7, 'vi': 9, 'vii0': 11}
-        return self.notes[0]+rn_map[self.name]
+        return self.notes[0]-rn_map[self.name]
 
     def get_possible_melody_notes(self):
         root_note = self.get_scale_root()
+        rn_map = {'I': 0, 'ii': 2, 'iii': 4,
+                'IV': 5, 'V': 7, 'vi': 9, 'vii0': 11}
+        root_note += rn_map[self.name]
         major = True
         dim = False
         if self.name.upper() != self.name:

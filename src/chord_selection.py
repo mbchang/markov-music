@@ -14,7 +14,6 @@ class ChordSelection(object):
         self.display = display
         self.graph = ChordGraph()
         self.phrase_bank = PhraseBank()
-
         self.phrase_length = 8
         # Initialize display with the node button callback.
         self.display.set_node_button_callback(self.on_node_button_click)
@@ -118,6 +117,7 @@ class ChordSelection(object):
     def toggle_save_button(self):
         if self.block_builder.get_num_blocks() == 4 or self.block_builder.get_num_blocks() == 8:
             self.display.show_save_button()
+        else:
             self.display.hide_save_button()
 
     def on_preview_button_click(self, instance):
@@ -155,7 +155,8 @@ class ChordSelection(object):
 
     # temporary method
     def get_song(self):
-        return Phrase(chords=[Chord(),Chord(),Chord(),Chord()])
+        return Phrase(chords=self.song_builder.get_flattened_chords())
+        # return Phrase(chords=[Chord(),Chord(),Chord(),Chord()])
 
     def activate(self):
         self.active = True

@@ -77,7 +77,6 @@ class RandomMovingBubble(InstructionGroup):
         self.time += dt
         new_pos = self.pos_anim.eval(self.time)
         self.ellipse.cpos = new_pos
-        print new_pos
         return self.pos_anim.is_active(self.time)
 
 
