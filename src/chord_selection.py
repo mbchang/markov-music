@@ -118,7 +118,6 @@ class ChordSelection(object):
     def toggle_save_button(self):
         if self.block_builder.get_num_blocks() == 4 or self.block_builder.get_num_blocks() == 8:
             self.display.show_save_button()
-        else:
             self.display.hide_save_button()
 
     def on_preview_button_click(self, instance):

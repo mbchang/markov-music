@@ -30,7 +30,8 @@ class MarkovMusicWidget(BaseWidget):
 
 
         # self.canvas.add(self.p_display)
-        self.p_display = PlaybackDisplay()
+        self.p_display = PlaybackDisplay(self.audio_control)
+        # self.add_widget(self.p_display)
 
         # Two main modes. ChordSelection and Playback.
         self.cs = ChordSelection(self.audio_control, self.cs_display)
@@ -47,6 +48,12 @@ class MarkovMusicWidget(BaseWidget):
         
         if keycode[1] == 't':
             self.toggle_mode()
+
+    def on_touch_down(self, touch):
+        if self.cs_mode:
+            self.cs_display.dispatch('on_touch_down', touch)
+        else:
+            self.p_display.dispatch('on_touch_down', touch)
 
     def on_key_up(self, keycode):
         pass

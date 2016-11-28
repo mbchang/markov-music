@@ -11,6 +11,8 @@ from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.button import Button
+import random
+import math
 
 # A menu button.
 class MenuButton(Button):
@@ -55,5 +57,27 @@ class Bubble(InstructionGroup):
 
     def on_update(self, dt):
         pass
+
+class RandomMovingBubble(InstructionGroup):
+    def __init__(self, pos, size=20, rgb=(1,0,0)):
+        self.pos = pos
+        self.size = size
+        self.color = Color(*rgb)
+        self.add(self.color)
+        self.ellipse = CEllipse(cpos=pos, csize=(self.size, self.size))
+        self.add(self.ellipse)
+        self.angle = random.random() * 2 * math.pi
+        total_distance = ((Window.height ** 2 + Window.width ** 2) ** 0.5) / 2.
+        final_pos_x = self.pos[0] + total_distance * math.sin(self.angle)
+        final_pos_y = self.pos[1] + total_distance * math.cos(self.angle)
+        self.pos_anim = KFAnim((0,self.pos[0],self.pos[1]),(1.5,final_pos_x,final_pos_y))
+        self.time = 0
+
+    def on_update(self,dt):
+        self.time += dt
+        new_pos = self.pos_anim.eval(self.time)
+        self.ellipse.cpos = new_pos
+        print new_pos
+        return self.pos_anim.is_active(self.time)
 
 
