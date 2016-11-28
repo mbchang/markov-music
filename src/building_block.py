@@ -57,8 +57,6 @@ class Chord(BuildingBlock):
 
 
 
-
-
 # Phrase is a building block and a node group.
 class Phrase(BuildingBlock):
     def __init__(self, chords=[]):

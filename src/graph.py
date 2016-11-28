@@ -294,6 +294,7 @@ class PhraseBank(Graph):
     def __init__(self):
         super(PhraseBank, self).__init__()
         self.bank = []
+        self.chord_graph = ChordGraph()
         self.prefixes = {}
 
     def add_to_bank(self, phrase):
@@ -304,7 +305,10 @@ class PhraseBank(Graph):
             self.prefixes[phrase.get_start().get_name()].append(phrase)
 
     def get_children(self, phrase):
-        return self.prefixes[phrase.get_start().get_name()]
+        children = []
+        for next_chord in self.chord_graph.get_children(phrase.get_end()):
+            children += self.prefixes[next_chord.get_name()]
+        return children
 
     def get_phrases(self):
         return self.bank
