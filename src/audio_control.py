@@ -97,6 +97,7 @@ class AudioController(object):
 
     def play_chord(self, chord, duration=1):
         notes = chord.get_notes()
+        print notes
         for note in notes:
             self.play_note(note, duration=duration)
 
