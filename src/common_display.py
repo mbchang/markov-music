@@ -60,6 +60,7 @@ class Bubble(InstructionGroup):
 
 class RandomMovingBubble(InstructionGroup):
     def __init__(self, pos, size=20, rgb=(1,0,0)):
+        super(RandomMovingBubble, self).__init__()
         self.pos = pos
         self.size = size
         self.color = Color(*rgb)
@@ -73,7 +74,7 @@ class RandomMovingBubble(InstructionGroup):
         self.pos_anim = KFAnim((0,self.pos[0],self.pos[1]),(1.5,final_pos_x,final_pos_y))
         self.time = 0
 
-    def on_update(self,dt):
+    def on_update(self, dt):
         self.time += dt
         new_pos = self.pos_anim.eval(self.time)
         self.ellipse.cpos = new_pos

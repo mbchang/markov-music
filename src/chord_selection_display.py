@@ -118,7 +118,6 @@ class CurrentProgressionLayout(RelativeLayout):
             size_hint = (1.0/(1 + self.phrase_length)*.75, .8)
         elif mode == 'phrases':
             row = int(len(self.preview_buttons) / self.phrase_length)
-            print 'row', row
             col = len(self.preview_buttons) % self.phrase_length
             x_pos = .8*((1.0 + col)/(1.0+self.phrase_length))
             pos_hint = {'center_x': x_pos, 'center_y': 1 - .15 * (row + 1)}
