@@ -29,18 +29,15 @@ class ChordGraph(Graph):
 
         # possible children: c[t,i,j] is 1 if j is a child of i
         # where j is at time t, t starts at 0
-        # TODO: these indices need to be adjusted if you don't fix the first chord
         self.C = np.tile(self.TM,(self.T,1,1)) # [T-1, S, S]
 
-        # TODO: add constraint for first chord
-        # TODO: this "6" should be a 7, but depends on your indexing
         self.add_constraint(6,set([0,4]))  # it can only end in I or V
 
     def _build_transition_matrix(self):
             # t[i,j] is prob i transitions to j
             # we do not allow self loops for now
 
-            t = np.zeros((7,7))
+            t = np.zeros((self.S,self.S))
 
             rows, cols = [],[]
 
@@ -141,9 +138,11 @@ class ChordGraph(Graph):
             children = [self._generate_chord(self.rn.sd_map[ci], sr, 'R') for ci in children_idx]
             return children
 
+
     def _sample_first_chords(self):
         sr = self.scale_root
-        common_first_notes = ['I','IV','V','vi']
+        # common_first_notes = ['I','IV','V','vi']
+        common_first_notes = ['I','ii','iii','IV','V','vi','vii0']
         first_chords = [self._generate_chord(n, sr, 'R') for n in common_first_notes]
         return first_chords
 
