@@ -132,14 +132,20 @@ class ChordGraph(Graph):
         """
         if current_idx == -1:
             assert chord is None
-            sr = self.scale_root#60  # TODO: we should initialize graph with a key, or have a button that selects key
-            return [self._generate_chord('I', sr, 'R')] # TODO can make this more interesting
+            first_chords = self._sample_first_chords()
+            return first_chords
         else:
             sr = chord.get_scale_root()
             chord_idx = self.rn.sd_rev_map[chord.get_name()]
             children_idx = list(self.C[current_idx, chord_idx].nonzero()[0])
             children = [self._generate_chord(self.rn.sd_map[ci], sr, 'R') for ci in children_idx]
             return children
+
+    def _sample_first_chords(self):
+        sr = self.scale_root
+        common_first_notes = ['I','IV','V','vi']
+        first_chords = [self._generate_chord(n, sr, 'R') for n in common_first_notes]
+        return first_chords
 
 
     # Get the possible chords based on only the chord transition rules.
