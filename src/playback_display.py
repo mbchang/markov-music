@@ -20,8 +20,9 @@ class PlaybackDisplay(Widget):
         num_x_blocks = 10
         x_block = int(x_pos * num_x_blocks)
         self.audio_control.touch_down_block_handler(x_block,y_block,num_x_blocks)
-        rmb = RandomMovingBubble(touch.pos)
-        self.anim_group.add(rmb)
+        for i in range(8):
+            rmb = RandomMovingBubble(touch.pos)
+            self.anim_group.add(rmb)
 
     def activate(self):
         pass
