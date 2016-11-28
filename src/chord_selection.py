@@ -82,6 +82,7 @@ class ChordSelection(object):
                 self.display.set_chords(self.graph.get_children())
                 self.toggle_save_button()
         elif self.mode == 'phrases':
+            self.audio_control.clear_previous_previews()
             if self.song_builder.remove_block() is not None:
                 self.display.pop_preview_button()
                 if self.song_builder.get_num_blocks() == 0:

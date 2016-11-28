@@ -115,7 +115,7 @@ class CurrentProgressionLayout(RelativeLayout):
         if mode == 'chords':
             # TODO: buttons are not vertically centered.
             pos_hint = {'center_x': .8*((1.0 + len(self.preview_buttons))/(1.0+self.phrase_length)), 'center_y': .5}
-            size_hint = (1.0/(1 + self.phrase_length)*.75, .8)
+            size_hint = (1.0/(1 + self.phrase_length)*.75, .6)
         elif mode == 'phrases':
             row = int(len(self.preview_buttons) / self.phrase_length)
             col = len(self.preview_buttons) % self.phrase_length
