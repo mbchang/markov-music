@@ -79,8 +79,8 @@ class CurrentProgressionLayout(RelativeLayout):
         self.pos = pos
         self.size = size
         self.phrase_length = phrase_length
-        self.canvas.add(Color(1.0, 0, 0))
-        self.canvas.add(Rectangle(size=self.size))
+        # self.canvas.add(Color(1.0, 0, 0))
+        #self.canvas.add(Rectangle(size=self.size))
 
         # Add preview buttons (to play the chord when clicked).
         self.preview_buttons = []
@@ -124,7 +124,7 @@ class CurrentProgressionLayout(RelativeLayout):
             size_hint = (1.0/(1 + self.phrase_length)*.75, .15)
         else:
             raise Exception('Bad mode.')
-        preview_button = NodeButton(pos_hint, size_hint, block)
+        preview_button = NodeButton(pos_hint, size_hint, block, preview=True)
         self.preview_buttons.append(preview_button)
         self.add_widget(preview_button)
         preview_button.set_callback(self.preview_button_callback)
@@ -160,8 +160,8 @@ class ChordSelectionLayout(RelativeLayout):
         super(ChordSelectionLayout, self).__init__()
         self.pos = pos
         self.size = size
-        self.canvas.add(Color(0, 0, 1.0))
-        self.canvas.add(Rectangle(size=self.size))
+        # self.canvas.add(Color(0, 0, 1.0))
+        #self.canvas.add(Rectangle(size=self.size))
 
         # Add a change mode button that switches the app between building chords
         # to building phrases.
@@ -209,8 +209,8 @@ class ChordSelectionLayout(RelativeLayout):
 class ChangeModeButton(Button):
     def __init__(self, pos_hint, size_hint, label):
         super(Button, self).__init__(pos_hint=pos_hint, size_hint=size_hint, text=label)
-        # self.background_normal = ''
-        self.background_color = [0, 1.0, 1.0, 1]
+        self.background_normal = ''
+        self.background_color = [0, 1.0, 1.0, .6]
 
     def set_callback(self, callback):
         self.bind(on_press=callback)
