@@ -55,7 +55,8 @@ class Chord(BuildingBlock):
     def set_notes(self, notes):
         self.notes = notes
 
-    def get_notes(self):
+
+    def _get_canonical_notes(self):
         # may be different from triad form
         if self.inversion == 'R' or self.inversion == '7':
             notes = self.notes
@@ -65,44 +66,24 @@ class Chord(BuildingBlock):
             notes = self.notes[2:]+self.notes[:1]
         elif self.inversion == '2':
             notes = self.notes[3:]+self.notes[:2]
+        return notes      
 
-        return self.expand_chord(notes)
+    def get_notes(self):
+        canonical_notes = self._get_canonical_notes()
+        return self.expand_chord(canonical_notes)
 
     def get_bottom(self):
-        if self.inversion == 'R' or self.inversion == '7':
-            note = self.notes[0]
-        elif self.inversion == '6' or self.inversion == '65':
-            note = self.notes[1]
-        elif self.inversion == '64' or self.inversion == '43':
-            note = self.notes[2]
-        elif self.inversion == '2':
-            note = self.notes[3]
-
-        return note
+        canonical_notes = self._get_canonical_notes()
+        return canonical_notes[0]
 
     def get_middle(self):
-        if self.inversion == 'R' or self.inversion == '7':
-            note = self.notes[1]
-        elif self.inversion == '6' or self.inversion == '65':
-            note = self.notes[2]
-        elif self.inversion == '64' or self.inversion == '43':
-            note = self.notes[0]
-        elif self.inversion == '2':
-            note = self.notes[0]  # TODO
-
-        return note
+        canonical_notes = self._get_canonical_notes()
+        return canonical_notes[1]  # TODO for 7th chords
 
     def get_top(self):
-        if self.inversion == 'R' or self.inversion == '7':
-            note = self.notes[2]
-        elif self.inversion == '6' or self.inversion == '65':
-            note = self.notes[0]
-        elif self.inversion == '64' or self.inversion == '43':
-            note = self.notes[1]
-        elif self.inversion == '2':
-            note = self.notes[1]  # TODO
+        canonical_notes = self._get_canonical_notes()
+        return canonical_notes[2] # TODO for 7th chords
 
-        return note
 
     def expand_chord(self, notes):
         """
