@@ -28,7 +28,7 @@ class ChordSelection(object):
         # phrase is made.
         # The song_builder builds the entire song and persistently stores it.
         self.block_builder = BlockBuilder(phrase_length=8)
-        self.song_builder = BlockBuilder()
+        self.song_builder = BlockBuilder(phrase_length=40)
 
         self.active = False
 
@@ -139,17 +139,17 @@ class ChordSelection(object):
     def on_change_mode_button_click(self, instance):
         # Toggle mode.
         if self.mode == 'phrases':
-            print 'changing mode to chords'
+            self.mode = 'chords'
             # Switch back to chord building mode.
             self.reset_chord_building()
             self.audio_control.clear_previous_previews()
-            self.mode = 'chords'
+            self.display.set_change_mode_button_text('Go To Phrase Mode')
         elif self.mode == 'chords':
-            print 'changing mode to phrases'
             # Switch back to phrase building mode.
             # Requires reloading the previously saved song.
             self.mode = 'phrases'
             self.load_phrase_builder()
+            self.display.set_change_mode_button_text('Go To Chord Mode')
         else:
             raise ModeException()
 

@@ -70,6 +70,9 @@ class ChordSelectionScreen(Widget):
     def hide_change_mode_button(self):
         self.chord_selection_layout.hide_chnage_mode_button()
 
+    def set_change_mode_button_text(self, text):
+        self.chord_selection_layout.set_change_mode_button_text(text)
+
     def on_update(self, dt):
         pass
 
@@ -168,7 +171,7 @@ class ChordSelectionLayout(RelativeLayout):
         mode_button_pos = {'center_x': .8, 'center_y': .1}
         mode_button_size = (.2, .1)
         self.change_mode_button = ChangeModeButton(mode_button_pos, mode_button_size,
-                                                   'Change Mode')
+                                                   'Go to Phrase Mode')
 
         self.node_button_callback = None
         self.chords = []
@@ -200,6 +203,9 @@ class ChordSelectionLayout(RelativeLayout):
     def hide_change_mode_button(self):
         self.remove_widget(self.change_mode_button)
 
+    def set_change_mode_button_text(self, text):
+        self.change_mode_button.set_text(text)
+
     def set_node_button_callback(self, callback):
         self.node_button_callback = callback
 
@@ -214,3 +220,6 @@ class ChangeModeButton(Button):
 
     def set_callback(self, callback):
         self.bind(on_press=callback)
+
+    def set_text(self, text):
+        self.text = text
