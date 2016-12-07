@@ -141,8 +141,8 @@ class ChordGraph(Graph):
 
     def _sample_first_chords(self):
         sr = self.scale_root
-        # common_first_notes = ['I','ii','iii','IV','V','vi','vii0']
-        common_first_notes = ['I']
+        common_first_notes = ['I','ii','iii','IV','V','vi','vii0']
+        # common_first_notes = ['I']
         first_chords = [self._generate_chord(n, sr, 'R') for n in common_first_notes]
         return first_chords
 
@@ -242,5 +242,7 @@ class PhraseBank(Graph):
     def get_starting_phrases(self):
         # For now, say that we can start the song with any phrase that begins
         # with a I chord.
+
+        # TODO: need to enforce this when user selects chords
         return self.prefixes[Chord().get_name()]
 
