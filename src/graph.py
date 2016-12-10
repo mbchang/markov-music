@@ -23,15 +23,20 @@ class ChordGraph(Graph):
         self.rn = RomanNumeral()
         self.scale_root = 0  # normalized
 
-        self.T = 8
+        self.T = 8  # default 
         self.S = 7
         self.TM = self._build_transition_matrix()
 
         # possible children: c[t,i,j] is 1 if j is a child of i
         # where j is at time t, t starts at 0
-        self.C = np.tile(self.TM,(self.T,1,1)) # [T-1, S, S]
+        self.set_max_steps(self.T)
 
         self.add_constraint(6,set([0,4]))  # it can only end in I or V
+
+    def set_max_steps(self, t):
+        self.T = t
+        self.C = np.tile(self.TM,(self.T,1,1)) # [T-1, S, S]  # perhaps you can rebuild every time you do get_children
+
 
     def _build_transition_matrix(self):
             # t[i,j] is prob i transitions to j
@@ -107,7 +112,6 @@ class ChordGraph(Graph):
             # backpropagate change all the way to the beginning
             self.add_constraint(t-1, new_values)
 
-
     def undo_selection(self):
         self.chord_stack.pop()
 
@@ -119,6 +123,10 @@ class ChordGraph(Graph):
         current_idx = len(self.chord_stack)
         current_chord = None if current_idx == 0 else self.chord_stack[-1]
         children = self._get_children(current_chord, current_idx-1)
+
+        # TODO do voice leading here
+        # pick right inversion for each one
+
         return children
 
     # can decide whether we want this to be in the chord class or not
@@ -141,7 +149,7 @@ class ChordGraph(Graph):
 
     def _sample_first_chords(self):
         sr = self.scale_root
-        common_first_notes = ['I','ii','iii','IV','V','vi','vii0']
+        common_first_notes = ['I','ii','iii','IV','V','vi','vii0'] #+ ['I']*100
         # common_first_notes = ['I']
         first_chords = [self._generate_chord(n, sr, 'R') for n in common_first_notes]
         return first_chords

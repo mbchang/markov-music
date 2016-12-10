@@ -28,6 +28,9 @@ class ChordSelectionScreen(Widget):
         self.add_widget(self.current_progression_layout)
         self.add_widget(self.chord_selection_layout)
 
+    def set_phrase_controls(self):
+        self.chord_selection_layout.set_phrase_controls()
+
     def set_chords(self, chords):
         self.chord_selection_layout.set_chords(chords)
 
@@ -42,6 +45,9 @@ class ChordSelectionScreen(Widget):
 
     def set_node_button_callback(self, callback):
         self.chord_selection_layout.set_node_button_callback(callback)
+
+    def set_phrase_control_callback(self, callback):
+        self.chord_selection_layout.set_phrase_control_callback(callback)
 
     def set_play_button_callback(self, callback):
         self.current_progression_layout.set_play_button_callback(callback)
@@ -125,6 +131,7 @@ class CurrentProgressionLayout(RelativeLayout):
             x_pos = .8*((1.0 + col)/(1.0+self.phrase_length))
             pos_hint = {'center_x': x_pos, 'center_y': 1 - .15 * (row + 1)}
             size_hint = (1.0/(1 + self.phrase_length)*.75, .15)
+            # MICHAEL LOOK AT THIS: this implements rows
         else:
             raise Exception('Bad mode.')
         preview_button = NodeButton(pos_hint, size_hint, block, preview=True)
@@ -197,8 +204,29 @@ class ChordSelectionLayout(RelativeLayout):
             button.set_callback(self.node_button_callback)
             self.add_widget(button)
 
+        # MICHALE LOOK AT THIS THIS IS WHERE WE ADD BUTTONS
+        # instead of calling set_chords on initialization, show constrained/unconstrained progression
+        # if unconstrained --> set_chords
+        # if constrained --> show them input buttons: start chord, end chord, number of transitions
+        # pos hint and size hint: relative to the size of layout
+            # if layout is 200 x 200
+            # size hint is 0.5, then it is 50% of layout
+            # pos hint is 0.5, then it is at 50% layout
+        # we can do multiple rows here too
+
+    def set_phrase_controls(self):
+        self.reset()
+        self.buttons.append(MenuButton({'center_x':1.0/3, 'center_y':0.5}, (0.2,0.2), 'Constrained'))
+        self.buttons.append(MenuButton({'center_x':2.0/3, 'center_y':0.5}, (0.2,0.2), 'Unconstrained'))
+        for button in self.buttons:
+            if self.node_button_callback is None:
+                raise Exception("No node button callback.")
+            button.set_callback(self.phrase_control_callback)
+            self.add_widget(button)
+
+
     def show_change_mode_button(self):
-        self.add_widget(self.change_mode_button)
+        self.add_widget(self.change_mode_button)  # MICHAEL LOOK AT THIS add button, look at the callback
 
     def hide_change_mode_button(self):
         self.remove_widget(self.change_mode_button)
@@ -211,6 +239,9 @@ class ChordSelectionLayout(RelativeLayout):
 
     def set_change_mode_button_callback(self, callback):
         self.change_mode_button.set_callback(callback)
+
+    def set_phrase_control_callback(self, callback):
+        self.phrase_control_callback = callback
 
 class ChangeModeButton(Button):
     def __init__(self, pos_hint, size_hint, label):

@@ -152,4 +152,3 @@ class Phrase(BuildingBlock):
         else:
             return self.chords[0].get_name() + " -> " + self.chords[-1].get_name()
 
-

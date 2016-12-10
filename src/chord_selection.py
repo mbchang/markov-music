@@ -12,9 +12,13 @@ class ChordSelection(object):
         super(ChordSelection, self).__init__()
         self.audio_control = audio_control
         self.display = display
-        self.graph = ChordGraph()
-        self.phrase_bank = PhraseBank()
         self.phrase_length = 8
+
+        self.graph = ChordGraph()
+        self.graph.set_max_steps(self.phrase_length)
+
+        self.phrase_bank = PhraseBank()
+
         # Initialize display with the node button callback.
         self.display.set_node_button_callback(self.on_node_button_click)
         self.display.set_play_button_callback(self.on_play_button_click)
@@ -22,7 +26,10 @@ class ChordSelection(object):
         self.display.set_save_button_callback(self.on_save_button_click)
         self.display.set_preview_button_callback(self.on_preview_button_click)
         self.display.set_change_mode_button_callback(self.on_change_mode_button_click)
+
+        self.display.set_phrase_control_callback(self.on_phrase_control_button_click)
         self.display.set_phrase_length(self.phrase_length)
+
 
         # The block_builder builds phrases together and clears after each
         # phrase is made.
@@ -35,8 +42,11 @@ class ChordSelection(object):
         # Mode is either 'chords' or 'phrases'
         self.mode = 'chords'
 
+        # Initialize graph
+        self.display.set_phrase_controls()
+
         # Initialize some chords.
-        self.display.set_chords(self.graph.get_children())
+        # self.display.set_chords(self.graph.get_children())
 
     # Reset the display to the beginning of chord building.
     # Does not erase the entire song, because the entire song is persistent
@@ -152,6 +162,9 @@ class ChordSelection(object):
             self.display.set_change_mode_button_text('Go To Chord Mode')
         else:
             raise ModeException()
+
+    def on_phrase_control_button_click(self, instance):
+        print 'heyeey'
 
     # Just a testing function.
     def test_play_note(self):
