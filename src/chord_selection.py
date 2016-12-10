@@ -12,11 +12,8 @@ class ChordSelection(object):
         super(ChordSelection, self).__init__()
         self.audio_control = audio_control
         self.display = display
-        self.phrase_length = 8
 
         self.graph = ChordGraph()
-        self.graph.set_max_steps(self.phrase_length)
-
         self.phrase_bank = PhraseBank()
 
         # Initialize display with the node button callback.
@@ -27,23 +24,34 @@ class ChordSelection(object):
         self.display.set_preview_button_callback(self.on_preview_button_click)
         self.display.set_change_mode_button_callback(self.on_change_mode_button_click)
 
+        # phrase length
+        # this controls the phrase length
+        self.phrase_length = None
         self.display.set_phrase_control_callback(self.on_phrase_control_button_click)
-        self.display.set_phrase_length(self.phrase_length)
 
+        # Initialize graph
+        self.display.set_phrase_controls()
 
-        # The block_builder builds phrases together and clears after each
-        # phrase is made.
-        # The song_builder builds the entire song and persistently stores it.
-        self.block_builder = BlockBuilder(phrase_length=8)
-        self.song_builder = BlockBuilder(phrase_length=40)
+        # all of this should be in the callback
+        # {}
+        # self.phrase_length = 8
+        # self.graph.set_max_steps(self.phrase_length)
+        # self.display.set_phrase_length(self.phrase_length)
+
+        # # The block_builder builds phrases together and clears after each
+        # # phrase is made.
+        # # The song_builder builds the entire song and persistently stores it.
+        # self.block_builder = BlockBuilder(phrase_length=8)
+        # self.song_builder = BlockBuilder(phrase_length=40)
+
+        # }
 
         self.active = False
 
         # Mode is either 'chords' or 'phrases'
         self.mode = 'chords'
 
-        # Initialize graph
-        self.display.set_phrase_controls()
+        assert self.phrase_length is not None
 
         # Initialize some chords.
         # self.display.set_chords(self.graph.get_children())
@@ -164,7 +172,25 @@ class ChordSelection(object):
             raise ModeException()
 
     def on_phrase_control_button_click(self, instance):
+        
+
+
         print 'heyeey'
+
+        # {}
+        self.phrase_length = 8
+        self.graph.set_max_steps(self.phrase_length)
+        self.display.set_phrase_length(self.phrase_length)
+
+        # The block_builder builds phrases together and clears after each
+        # phrase is made.
+        # The song_builder builds the entire song and persistently stores it.
+        self.block_builder = BlockBuilder(phrase_length=8)
+        self.song_builder = BlockBuilder(phrase_length=40)
+
+        # }
+
+
 
     # Just a testing function.
     def test_play_note(self):
