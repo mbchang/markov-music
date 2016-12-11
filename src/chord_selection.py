@@ -132,6 +132,7 @@ class ChordSelection(object):
             self.display.add_node_to_progression(instance.block, self.mode)
             # Get next set of possible chords.
             self.graph.make_selection(instance.block)
+            # if not self.graph.at_end:
             self.display.set_chords(self.graph.get_children())
             # Show save button only when length of current phrase is 4 or 8.
             self.toggle_save_button()
@@ -185,10 +186,14 @@ class ChordSelection(object):
             self.phrase_length = 3  # you have to do something else here
             self.display.set_phrase_length_csl()  # this will set self.phrase_length and do everything else
 
-    def create_graph_and_builders(self, phrase_length):
+    def create_graph_and_builders(self, phrase_length, start_chord_name=None, end_chord_name=None):
         # add constraints based on start and end
 
         self.graph.set_max_steps(phrase_length)
+        if start_chord_name is not None:
+            self.graph.set_chord(1, start_chord_name)  # 1 indexed
+        if end_chord_name is not None:
+            self.graph.set_chord(phrase_length, end_chord_name)
         self.display.set_phrase_length(phrase_length)
 
         # The block_builder builds phrases together and clears after each
@@ -211,7 +216,7 @@ class ChordSelection(object):
     def on_end_chord_button_click(self, instance):
         self.end_chord_name = instance.label
         print 'end chord', self.end_chord_name
-        self.create_graph_and_builders(self.phrase_length)
+        self.create_graph_and_builders(self.phrase_length, self.start_chord_name, self.end_chord_name)
 
     # Just a testing function.
     def test_play_note(self):

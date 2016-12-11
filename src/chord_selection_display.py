@@ -245,7 +245,7 @@ class ChordSelectionLayout(RelativeLayout):
         for i in range(max_length):
             pos_hint = {'center_x': (1.0 + i)/(1+max_length), 'center_y': .5}
             size_hint = (1.0/(1 + max_length)*.75, .2)
-            self.buttons.append(MenuButton(pos_hint, size_hint,str(i)))
+            self.buttons.append(MenuButton(pos_hint, size_hint,str(i+1)))
         for button in self.buttons:
             if self.node_button_callback is None:
                 raise Exception("No phrase control button callback.")

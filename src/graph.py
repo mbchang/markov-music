@@ -22,6 +22,7 @@ class ChordGraph(Graph):
         self.chord_stack = []
         self.rn = RomanNumeral()
         self.scale_root = 0  # normalized
+        self.constraints = {}
 
         self.T = 8  # default 
         self.S = 7
@@ -31,11 +32,14 @@ class ChordGraph(Graph):
         # where j is at time t, t starts at 0
         self.set_max_steps(self.T)
 
-        self.add_constraint(6,set([0,4]))  # it can only end in I or V
+
 
     def set_max_steps(self, t):
+        # like a reset
         self.T = t
         self.C = np.tile(self.TM,(self.T,1,1)) # [T-1, S, S]  # perhaps you can rebuild every time you do get_children
+        self.constraints = {}
+        # self.add_constraint(0,set([0,4]), True)  # it can only end in I or 
 
 
     def _build_transition_matrix(self):
@@ -81,18 +85,21 @@ class ChordGraph(Graph):
 
     def make_selection(self, chord):
         self.chord_stack.append(chord)
+        print self.constraints
 
     # TODO: make an undo_constraint:
     # perhaps we can generate a stack of constraints: (chord_idx, original_vals, new_vals)
     # TODO: add safety mechanism such that the user cannot specify a constraint that kills all possible paths
     # TODO: if this is called by an outside method, then we'd need to figure out a mapping
-    def add_constraint(self, t, values):
+    def add_constraint(self, t, values, external):
         """
             t: in range [0,7]
             chord_idx: in range [0,6] = [I, ii, iii, IV, V, vi, vii0]
             values: set of values that are in range [0,6] = [I, ii, iii, IV, V, vi, vii0]
         """
-        if t < 0:
+        if external:
+            self.constraints[t] = values
+        if t < 1:
             return
         else:
             # i cannot take any value that is NOT in this set
@@ -109,8 +116,17 @@ class ChordGraph(Graph):
                     if self.C[t,i,j] == 1:
                         new_values.add(i)
 
+            print 'self.constraints', self.constraints
+
             # backpropagate change all the way to the beginning
-            self.add_constraint(t-1, new_values)
+            self.add_constraint(t-1, new_values, False)
+
+    def set_chord(self, t, chord_name):
+
+        # t-1 to map it to 0-indexed. it is originally 1-indexed
+        self.add_constraint(t-1, [self.rn.sd_rev_map[chord_name]], True)
+        print self.constraints
+        print self.C
 
     def undo_selection(self):
         self.chord_stack.pop()
@@ -121,12 +137,10 @@ class ChordGraph(Graph):
     def get_children(self):
         # Returns the set of next possible chords given current state.
         current_idx = len(self.chord_stack)
+        if current_idx >= self.T:
+            return []
         current_chord = None if current_idx == 0 else self.chord_stack[-1]
-        children = self._get_children(current_chord, current_idx-1)
-
-        # TODO do voice leading here
-        # pick right inversion for each one
-
+        children = self._get_children(current_chord, current_idx)
         return children
 
     # can decide whether we want this to be in the chord class or not
@@ -135,7 +149,7 @@ class ChordGraph(Graph):
 
             TODO: can return other inversions
         """
-        if current_idx == -1:
+        if current_idx == 0:
             assert chord is None
             first_chords = self._sample_first_chords()
             return first_chords
@@ -149,9 +163,11 @@ class ChordGraph(Graph):
 
     def _sample_first_chords(self):
         sr = self.scale_root
-        common_first_notes = ['I','ii','iii','IV','V','vi','vii0'] #+ ['I']*100
-        # common_first_notes = ['I']
-        first_chords = [self._generate_chord(n, sr, 'R') for n in common_first_notes]
+        if self.constraints.has_key(0):
+            first_notes = [self.rn.sd_map[x] for x in self.constraints[0]]
+        else:
+            first_notes = ['I','ii','iii','IV','V','vi','vii0'] #+ ['I']*100  # TODO
+        first_chords = [self._generate_chord(n, sr, 'R') for n in first_notes]
         return first_chords
 
 
