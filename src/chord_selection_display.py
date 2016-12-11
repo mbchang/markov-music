@@ -19,6 +19,7 @@ class ChordSelectionScreen(Widget):
     def reset(self):
         self.current_progression_layout.reset()
         self.chord_selection_layout.reset()
+        self.set_phrase_controls()
 
     def inactivate(self):
         self.remove_widget(self.current_progression_layout)
@@ -126,11 +127,13 @@ class CurrentProgressionLayout(RelativeLayout):
         save_pos_hint = {'center_x': .9, 'center_y': .75}
         save_size_hint = (.15, .2)
         self.save_button = MenuButton(save_pos_hint, save_size_hint, 'Save')
+        self.save_button_on = False
 
     def reset(self):
         for button in self.preview_buttons:
             self.remove_widget(button)
         self.preview_buttons = []
+        self.hide_save_button()
 
     def add_preview_button(self, block, mode):
         if len(self.preview_buttons) >= self.max_blocks:
@@ -174,10 +177,14 @@ class CurrentProgressionLayout(RelativeLayout):
         self.phrase_length = phrase_length
 
     def show_save_button(self):
-        self.add_widget(self.save_button)
+        if not self.save_button_on:
+            self.add_widget(self.save_button)
+            self.save_button_on = True
 
     def hide_save_button(self):
-        self.remove_widget(self.save_button)
+        if self.save_button_on:
+            self.remove_widget(self.save_button)
+            self.save_button_on = False
 
 
 class ChordSelectionLayout(RelativeLayout):
@@ -242,10 +249,10 @@ class ChordSelectionLayout(RelativeLayout):
     def set_phrase_length_csl(self):
         self.reset()
         max_length = 8
-        for i in range(max_length):
-            pos_hint = {'center_x': (1.0 + i)/(1+max_length), 'center_y': .5}
+        for i in range(max_length-1):
+            pos_hint = {'center_x': (1.0 + i)/(max_length), 'center_y': .5}
             size_hint = (1.0/(1 + max_length)*.75, .2)
-            self.buttons.append(MenuButton(pos_hint, size_hint,str(i+1)))
+            self.buttons.append(MenuButton(pos_hint, size_hint,str(i+2)))
         for button in self.buttons:
             if self.node_button_callback is None:
                 raise Exception("No phrase control button callback.")

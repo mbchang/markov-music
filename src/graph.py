@@ -123,8 +123,6 @@ class ChordGraph(Graph):
         # t-1 to map it to 0-indexed. it is originally 1-indexed
         if chord_name != 'NA':
             self.add_constraint(t-1, [self.rn.sd_rev_map[chord_name]], True)
-            print self.constraints
-            print self.C
 
     def undo_selection(self):
         self.chord_stack.pop()

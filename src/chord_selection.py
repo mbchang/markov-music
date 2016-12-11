@@ -29,6 +29,9 @@ class ChordSelection(object):
         # Mode is either 'chords' or 'phrases'
         self.mode = 'chords'
 
+        self.block_builder = BlockBuilder()
+        self.song_builder = BlockBuilder()
+
         # phrase length
         # this controls the phrase length
         self.phrase_length = None
@@ -67,9 +70,11 @@ class ChordSelection(object):
     # and we may want to switch back to it later.
     def reset_chord_building(self):
         self.graph.reset()
-        self.display.reset()
-        self.display.set_chords(self.graph.get_children())
         self.block_builder.clear_blocks()
+        self.display.reset()
+        # self.display.set_chords(self.graph.get_children())  # need to have a reset function.
+        # self.block_builder.clear_blocks()
+        # self.display.set_phrase_controls()
 
     # Loads phrase building mode, takes existing phrases in the song
     # and displays them so the user can pick up where they left off.
@@ -148,10 +153,13 @@ class ChordSelection(object):
             raise ModeException()
 
     def toggle_save_button(self):
-        if self.block_builder.get_num_blocks() == 4 or self.block_builder.get_num_blocks() == 8:
+        # if self.block_builder.get_num_blocks() == 4 or self.block_builder.get_num_blocks() == 8:
+        #     self.display.show_save_button()
+        # else:
+        #     self.display.hide_save_button()
+        # # if True: self.display.show_save_button()
+        if self.block_builder.get_num_blocks() > 1:
             self.display.show_save_button()
-        else:
-            self.display.hide_save_button()
 
     def on_preview_button_click(self, instance):
         if self.mode == 'chords':
@@ -199,8 +207,10 @@ class ChordSelection(object):
         # The block_builder builds phrases together and clears after each
         # phrase is made.
         # The song_builder builds the entire song and persistently stores it.
-        self.block_builder = BlockBuilder(phrase_length=phrase_length)
-        self.song_builder = BlockBuilder(phrase_length=phrase_length*5)
+        # self.block_builder = BlockBuilder(phrase_length=phrase_length)
+        # self.song_builder = BlockBuilder(phrase_length=phrase_length*5)
+        self.block_builder.set_phrase_length(phrase_length)
+        self.song_builder.set_phrase_length(40)
         self.display.set_chords(self.graph.get_children())      
 
     def on_phrase_length_csl_button_click(self, instance):
