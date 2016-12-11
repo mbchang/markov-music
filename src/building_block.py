@@ -15,21 +15,22 @@ class BuildingBlock(object):
 
 
 class Chord(BuildingBlock):
-    def __init__(self, notes=[0, 4, 7], name='I',inversion='R'):
+    def __init__(self, notes=[0, 4, 7], name='I',inversion=0):
         super(Chord, self).__init__()
         # always represent chord in canonical triad form
         # use expand_chord() to generate other notes
-        self.notes = notes  
+        self.notes = notes
         self.name = name
         self.root = notes[0]
+        # Inversion is 0 for root position, 1 for first inversion, etc.
         self.inversion = inversion
+        # Scale_root is the offset from 60 for the root of the scale.
+        # It will always be 0, so we are always working in C major,
+        # and if desired, any modulation is done at the audio control.
         self.scale_root = 0
 
     def get_scale_root(self):
-        # TODO: make this combined with RomanNumeral
-        rn_map = {'I': 0, 'ii': 2, 'iii': 4,
-                'IV': 5, 'V': 7, 'vi': 9, 'vii0': 11}
-        return self.notes[0]-rn_map[self.name]
+        return self.scale_root
 
     def get_possible_melody_notes(self):
         root_note = self.get_scale_root()
@@ -57,15 +58,17 @@ class Chord(BuildingBlock):
 
     def _get_canonical_notes(self):
         # may be different from triad form
-        if self.inversion == 'R' or self.inversion == '7':
+        if self.inversion == 0:
             notes = self.notes
-        elif self.inversion == '6' or self.inversion == '65':
+        elif self.inversion == 1:
             notes = self.notes[1:]+self.notes[0]
-        elif self.inversion == '64' or self.inversion == '43':
+        elif self.inversion == 2:
             notes = self.notes[2:]+self.notes[:1]
-        elif self.inversion == '2':
+        elif self.inversion == 3:
             notes = self.notes[3:]+self.notes[:2]
-        return notes      
+        new_notes = self.notes[self.inversion:] + self.notes[:self.inversion]
+        assert new_notes == notes
+        return notes
 
     def get_notes(self):
         canonical_notes = self._get_canonical_notes()
@@ -81,13 +84,13 @@ class Chord(BuildingBlock):
 
     def get_top(self):
         canonical_notes = self._get_canonical_notes()
-        return canonical_notes[2] # TODO for 7th chords
+        return canonical_notes[-1]
 
 
     def expand_chord(self, notes):
         """
         Take canonical triad form and expand to different notes
-        
+
         preserve root, but can be different octave
         """
         # hacky

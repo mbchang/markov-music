@@ -143,14 +143,15 @@ class ChordGraph(Graph):
         if current_idx >= self.T:
             return []
         current_chord = None if current_idx == 0 else self.chord_stack[-1]
+
         children = self._get_children(current_chord, current_idx)
-        return children
+        children_with_voice_leading = self._voice_leading(children)
+        return children_with_voice_leading
 
     # can decide whether we want this to be in the chord class or not
     def _get_children(self, chord, current_idx):
         """ Gets children purely from chord transition rules. No viterbi
 
-            TODO: can return other inversions
         """
         if current_idx == 0:
             assert chord is None
@@ -160,7 +161,7 @@ class ChordGraph(Graph):
             sr = chord.get_scale_root()
             chord_idx = self.rn.sd_rev_map[chord.get_name()]
             children_idx = list(self.C[current_idx, chord_idx].nonzero()[0])
-            children = [self._generate_chord(self.rn.sd_map[ci], sr, 'R') for ci in children_idx]
+            children = [self._generate_chord(self.rn.sd_map[ci], sr, 0) for ci in children_idx]
             return children
 
     def _sample_first_chords(self):
@@ -169,7 +170,7 @@ class ChordGraph(Graph):
             first_notes = [self.rn.sd_map[x] for x in self.constraints[0]]
         else:
             first_notes = ['I','ii','iii','IV','V','vi','vii0'] #+ ['I']*100  # TODO
-        first_chords = [self._generate_chord(n, sr, 'R') for n in first_notes]
+        first_chords = [self._generate_chord(n, sr, 0) for n in first_notes]
         return first_chords
 
 
@@ -182,8 +183,9 @@ class ChordGraph(Graph):
         for i in xrange(len(transition_row)):
             if transition_row[i] == 1:
                 children_idx.append(i)
-        children = [self._generate_chord(self.rn.sd_map[ci], sr, 'R') for ci in children_idx]
-        return children
+        children = [self._generate_chord(self.rn.sd_map[ci], sr, 0) for ci in children_idx]
+        children_with_voice_leading = self._voice_leading(children)
+        return children_with_voice_leading
 
     # need to generate notes given roman numeral, scale root, and inversion
     def _generate_chord(self, rn, sr, inv):
@@ -196,6 +198,27 @@ class ChordGraph(Graph):
         chord_root = self.rn.rn_root_lookup(rn) + sr
         chord_notes = self.rn.get_chord_notes(chord_root, self.rn.get_rn_type(rn))
         return Chord(chord_notes, rn, inv)
+
+    def _voice_leading(self, next_chords):
+        """
+            Input: an array of next possible chords following the current chord_stack.
+            Output: an array containing an entry for each possible next chord. The entry
+                    is an array that is the current chord stack + the next chord, all
+                    with optimal voice leading.
+        """
+        # For now, don't do anything.
+        return next_chords
+
+    def _do_voice_leading(self, chords):
+        """
+            Performs Viterbi on the given chords to output the optimal inversions
+            for each chord. Optimal is defined as minimizing the overall distance traveled
+            among the chords, while still guaranteeing that the given chord ends in root position.
+        """
+        # Each chord has a name, notes, and an inversion.
+        # Assume the last chord is going to be in root position.
+        # Use Viterbi to find best inversions for all chords.
+        pass
 
 
 class RomanNumeral(object):
