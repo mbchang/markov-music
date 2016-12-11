@@ -189,9 +189,9 @@ class ChordSelection(object):
     def on_phrase_control_button_click(self, instance):
         if instance.label == 'Unconstrained':
             self.phrase_length = 8
+            self.display.add_phrase_length_label(self.phrase_length)
             self.create_graph_and_builders(self.phrase_length)
         else:
-            self.phrase_length = 3  # you have to do something else here
             self.display.set_phrase_length_csl()  # this will set self.phrase_length and do everything else
 
     def create_graph_and_builders(self, phrase_length, start_chord_name=None, end_chord_name=None):
@@ -215,17 +215,17 @@ class ChordSelection(object):
 
     def on_phrase_length_csl_button_click(self, instance):
         self.phrase_length = int(instance.label)
-        print 'phrase length', self.phrase_length
+        self.display.add_phrase_length_label(self.phrase_length)
         self.display.set_chord_preselect('start')
 
     def on_start_chord_button_click(self, instance):
         self.start_chord_name = instance.label
-        print 'start chord', self.start_chord_name
+        self.display.add_start_chord_label(self.start_chord_name)
         self.display.set_chord_preselect('end')
 
     def on_end_chord_button_click(self, instance):
         self.end_chord_name = instance.label
-        print 'end chord', self.end_chord_name
+        self.display.add_end_chord_label(self.end_chord_name)
         self.create_graph_and_builders(self.phrase_length, self.start_chord_name, self.end_chord_name)
 
     # Just a testing function.

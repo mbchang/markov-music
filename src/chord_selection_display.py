@@ -16,10 +16,16 @@ class ChordSelectionScreen(Widget):
         self.add_widget(self.current_progression_layout)
         self.add_widget(self.chord_selection_layout)
 
+        self.info = Label(text = "", valign='top', halign='left',font_size='20sp',
+              pos=(Window.width * 0.65, Window.height * -0.4),
+              text_size=(Window.width, Window.height))
+        self.add_widget(self.info)
+
     def reset(self):
         self.current_progression_layout.reset()
         self.chord_selection_layout.reset()
         self.set_phrase_controls()
+        self.info.text = ""
 
     def inactivate(self):
         self.remove_widget(self.current_progression_layout)
@@ -94,6 +100,18 @@ class ChordSelectionScreen(Widget):
 
     def set_change_mode_button_text(self, text):
         self.chord_selection_layout.set_change_mode_button_text(text)
+
+    def add_phrase_length_label(self, phrase_length):
+        text = "Phrase Length: " + str(phrase_length)
+        self.info.text += text
+
+    def add_start_chord_label(self, start_chord):
+        text = "    Start Chord: " + str(start_chord)
+        self.info.text += text
+
+    def add_end_chord_label(self, end_chord):
+        text = "    End Chord: " + str(end_chord)
+        self.info.text += text
 
     def on_update(self, dt):
         pass
@@ -316,3 +334,9 @@ class ChangeModeButton(Button):
 
     def set_text(self, text):
         self.text = text
+
+def topleft_label() :
+    l = Label(text = "text", valign='top', font_size='20sp',
+              pos=(Window.width * 0.5, Window.height * 0.4),
+              text_size=(Window.width, Window.height))
+    return l
