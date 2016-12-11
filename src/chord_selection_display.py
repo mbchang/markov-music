@@ -92,6 +92,18 @@ class ChordSelectionScreen(Widget):
     def hide_save_button(self):
         self.current_progression_layout.hide_save_button()
 
+    def show_play_button(self):
+        self.current_progression_layout.show_play_button()
+
+    def hide_play_button(self):
+        self.current_progression_layout.hide_play_button()
+
+    def show_undo_button(self):
+        self.current_progression_layout.show_undo_button()
+
+    def hide_undo_button(self):
+        self.current_progression_layout.hide_undo_button()
+
     def show_change_mode_button(self):
         self.chord_selection_layout.show_change_mode_button()
 
@@ -134,12 +146,14 @@ class CurrentProgressionLayout(RelativeLayout):
         play_pos_hint = {'center_x': .9, 'center_y': .25}
         play_size_hint = (.15, .2)
         self.play_button = MenuButton(play_pos_hint, play_size_hint, 'Play')
-        self.add_widget(self.play_button)
+        self.play_button_on = False
+        # self.add_widget(self.play_button)  # add this afterwards
 
         undo_pos_hint = {'center_x': .9, 'center_y': .5}
         undo_size_hint = (.15, .2)
         self.undo_button = MenuButton(undo_pos_hint, undo_size_hint, 'Undo')
-        self.add_widget(self.undo_button)
+        self.undo_button_on = False
+        # self.add_widget(self.undo_button)  # add this afterwards
 
         # Do not show save button on initialization.
         save_pos_hint = {'center_x': .9, 'center_y': .75}
@@ -152,6 +166,8 @@ class CurrentProgressionLayout(RelativeLayout):
             self.remove_widget(button)
         self.preview_buttons = []
         self.hide_save_button()
+        self.hide_play_button()
+        self.hide_undo_button()
 
     def add_preview_button(self, block, mode):
         if len(self.preview_buttons) >= self.max_blocks:
@@ -167,7 +183,6 @@ class CurrentProgressionLayout(RelativeLayout):
             x_pos = .8*((1.0 + col)/(1.0+self.phrase_length))
             pos_hint = {'center_x': x_pos, 'center_y': 1 - .15 * (row + 1)}
             size_hint = (1.0/(1 + self.phrase_length)*.75, .15)
-            # MICHAEL LOOK AT THIS: this implements rows
         else:
             raise Exception('Bad mode.')
         preview_button = NodeButton(pos_hint, size_hint, block, preview=True)
@@ -175,15 +190,34 @@ class CurrentProgressionLayout(RelativeLayout):
         self.add_widget(preview_button)
         preview_button.set_callback(self.preview_button_callback)
 
-
     def pop_preview_button(self):
         self.remove_widget(self.preview_buttons.pop())
 
     def set_preview_button_callback(self, callback):
         self.preview_button_callback = callback
 
+    def show_play_button(self):
+        if not self.play_button_on:
+            self.add_widget(self.play_button)
+            self.play_button_on = True
+
+    def hide_play_button(self):
+        if self.play_button_on:
+            self.remove_widget(self.play_button)
+            self.play_button_on = False
+
     def set_play_button_callback(self, callback):
         self.play_button.set_callback(callback)
+
+    def show_undo_button(self):
+        if not self.undo_button_on:
+            self.add_widget(self.undo_button)
+            self.undo_button_on = True
+
+    def hide_undo_button(self):
+        if self.undo_button_on:
+            self.remove_widget(self.undo_button)
+            self.undo_button_on = False
 
     def set_undo_button_callback(self, callback):
         self.undo_button.set_callback(callback)

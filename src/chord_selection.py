@@ -109,6 +109,8 @@ class ChordSelection(object):
                 self.display.pop_preview_button()
                 self.graph.undo_selection()
                 self.display.set_chords(self.graph.get_children())
+                self.toggle_undo_button()
+                self.toggle_play_button()
                 self.toggle_save_button()
         elif self.mode == 'phrases':
             self.audio_control.clear_previous_previews()
@@ -139,7 +141,8 @@ class ChordSelection(object):
             self.graph.make_selection(instance.block)
             # if not self.graph.at_end:
             self.display.set_chords(self.graph.get_children())
-            # Show save button only when length of current phrase is 4 or 8.
+            self.toggle_undo_button()
+            self.toggle_play_button()
             self.toggle_save_button()
         elif self.mode == 'phrases':
             self.audio_control.play_preview(instance.block.get_chords())
@@ -152,14 +155,23 @@ class ChordSelection(object):
         else:
             raise ModeException()
 
+    def toggle_play_button(self):
+        if self.block_builder.get_num_blocks() > 0:
+            self.display.show_play_button()
+        else:
+            self.display.hide_play_button()
+
+    def toggle_undo_button(self):
+        if self.block_builder.get_num_blocks() > 0:
+            self.display.show_undo_button()
+        else:
+            self.display.hide_undo_button()
+
     def toggle_save_button(self):
-        # if self.block_builder.get_num_blocks() == 4 or self.block_builder.get_num_blocks() == 8:
-        #     self.display.show_save_button()
-        # else:
-        #     self.display.hide_save_button()
-        # # if True: self.display.show_save_button()
         if self.block_builder.get_num_blocks() > 1:
             self.display.show_save_button()
+        else:
+            self.display.hide_save_button()
 
     def on_preview_button_click(self, instance):
         if self.mode == 'chords':
