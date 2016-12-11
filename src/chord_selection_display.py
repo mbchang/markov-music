@@ -37,6 +37,7 @@ class ChordSelectionScreen(Widget):
 
     def set_phrase_controls(self):
         self.chord_selection_layout.set_phrase_controls()
+        self.show_undo_phrase_ctrl_button()
 
     def set_phrase_length_csl(self):
         self.chord_selection_layout.set_phrase_length_csl()
@@ -98,6 +99,15 @@ class ChordSelectionScreen(Widget):
     def hide_play_button(self):
         self.current_progression_layout.hide_play_button()
 
+    def show_undo_phrase_ctrl_button(self):
+        self.current_progression_layout.show_undo_phrase_ctrl_button()
+
+    def hide_undo_phrase_ctrl_button(self):
+        self.current_progression_layout.hide_undo_phrase_ctrl_button()
+
+    def set_undo_phrase_ctrl_button_callback(self, callback):
+        self.current_progression_layout.set_undo_phrase_ctrl_button_callback(callback)
+
     def show_undo_button(self):
         self.current_progression_layout.show_undo_button()
 
@@ -155,6 +165,12 @@ class CurrentProgressionLayout(RelativeLayout):
         self.undo_button_on = False
         # self.add_widget(self.undo_button)  # add this afterwards
 
+        # phrase controls
+        undo_phrase_ctrl_pos_hint = {'center_x': .9, 'center_y': .75}
+        undo_phrase_ctrl_size_hint = (.15, .2)
+        self.undo_phrase_ctrl_button = MenuButton(undo_phrase_ctrl_pos_hint, undo_phrase_ctrl_size_hint, 'Restart Phrase')
+        self.undo_phrase_ctrl_button_on = False
+
         # Do not show save button on initialization.
         save_pos_hint = {'center_x': .9, 'center_y': .75}
         save_size_hint = (.15, .2)
@@ -196,6 +212,16 @@ class CurrentProgressionLayout(RelativeLayout):
     def set_preview_button_callback(self, callback):
         self.preview_button_callback = callback
 
+    def show_undo_phrase_ctrl_button(self):
+        if not self.undo_phrase_ctrl_button_on:
+            self.add_widget(self.undo_phrase_ctrl_button)
+            self.undo_phrase_ctrl_button_on = True
+
+    def hide_undo_phrase_ctrl_button(self):
+        if self.undo_phrase_ctrl_button_on:
+            self.remove_widget(self.undo_phrase_ctrl_button)
+            self.undo_phrase_ctrl_button_on = False
+
     def show_play_button(self):
         if not self.play_button_on:
             self.add_widget(self.play_button)
@@ -227,6 +253,9 @@ class CurrentProgressionLayout(RelativeLayout):
 
     def set_phrase_length(self, phrase_length):  # TODO
         self.phrase_length = phrase_length
+
+    def set_undo_phrase_ctrl_button_callback(self, callback):
+        self.undo_phrase_ctrl_button.set_callback(callback)
 
     def show_save_button(self):
         if not self.save_button_on:

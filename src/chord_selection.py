@@ -23,6 +23,7 @@ class ChordSelection(object):
         self.display.set_save_button_callback(self.on_save_button_click)
         self.display.set_preview_button_callback(self.on_preview_button_click)
         self.display.set_change_mode_button_callback(self.on_change_mode_button_click)
+        self.display.set_undo_phrase_ctrl_button_callback(self.on_undo_phrase_ctrl_button_click)
 
         self.active = False
 
@@ -131,6 +132,8 @@ class ChordSelection(object):
 
     def on_node_button_click(self, instance):
         if self.mode == 'chords':
+            self.display.hide_undo_phrase_ctrl_button()
+
             self.audio_control.play_chord(instance.block)
             # Make a selection: update both the block builder and the display.
             if self.block_builder.add_block(instance.block) < 0:
@@ -223,7 +226,7 @@ class ChordSelection(object):
         # self.song_builder = BlockBuilder(phrase_length=phrase_length*5)
         self.block_builder.set_phrase_length(phrase_length)
         self.song_builder.set_phrase_length(40)
-        self.display.set_chords(self.graph.get_children())      
+        self.display.set_chords(self.graph.get_children()) 
 
     def on_phrase_length_csl_button_click(self, instance):
         self.phrase_length = int(instance.label)
@@ -239,6 +242,12 @@ class ChordSelection(object):
         self.end_chord_name = instance.label
         self.display.add_end_chord_label(self.end_chord_name)
         self.create_graph_and_builders(self.phrase_length, self.start_chord_name, self.end_chord_name)
+
+    def on_undo_phrase_ctrl_button_click(self, instance):
+        # reset everything
+        self.reset_chord_building()
+        self.display.set_phrase_controls()
+        
 
     # Just a testing function.
     def test_play_note(self):
