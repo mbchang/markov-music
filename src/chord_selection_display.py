@@ -254,7 +254,8 @@ class ChordSelectionLayout(RelativeLayout):
 
     def set_chord_preselect(self, mode):
         self.reset()
-        chords = ['I','ii','iii','IV','V','vi','vii0']
+        chords = ['I','ii','iii','IV','V','vi','vii0', 'NA']
+        print chords
         for i in range(len(chords)):
             pos_hint = {'center_x': (1.0 + i)/(1+len(chords)), 'center_y': .5}
             size_hint = (1.0/(1 + len(chords))*.75, .2)
@@ -270,9 +271,8 @@ class ChordSelectionLayout(RelativeLayout):
                 raise Exception("unknown mode")
             self.add_widget(button)
 
-
     def show_change_mode_button(self):
-        self.add_widget(self.change_mode_button)  # MICHAEL LOOK AT THIS add button, look at the callback
+        self.add_widget(self.change_mode_button)
 
     def hide_change_mode_button(self):
         self.remove_widget(self.change_mode_button)

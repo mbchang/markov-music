@@ -33,14 +33,11 @@ class ChordGraph(Graph):
         self.set_max_steps(self.T)
 
 
-
     def set_max_steps(self, t):
         # like a reset
         self.T = t
         self.C = np.tile(self.TM,(self.T,1,1)) # [T-1, S, S]  # perhaps you can rebuild every time you do get_children
         self.constraints = {}
-        # self.add_constraint(0,set([0,4]), True)  # it can only end in I or 
-
 
     def _build_transition_matrix(self):
             # t[i,j] is prob i transitions to j
@@ -124,9 +121,10 @@ class ChordGraph(Graph):
     def set_chord(self, t, chord_name):
 
         # t-1 to map it to 0-indexed. it is originally 1-indexed
-        self.add_constraint(t-1, [self.rn.sd_rev_map[chord_name]], True)
-        print self.constraints
-        print self.C
+        if chord_name != 'NA':
+            self.add_constraint(t-1, [self.rn.sd_rev_map[chord_name]], True)
+            print self.constraints
+            print self.C
 
     def undo_selection(self):
         self.chord_stack.pop()
@@ -159,7 +157,6 @@ class ChordGraph(Graph):
             children_idx = list(self.C[current_idx, chord_idx].nonzero()[0])
             children = [self._generate_chord(self.rn.sd_map[ci], sr, 'R') for ci in children_idx]
             return children
-
 
     def _sample_first_chords(self):
         sr = self.scale_root
