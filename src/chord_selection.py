@@ -73,9 +73,7 @@ class ChordSelection(object):
         self.graph.reset()
         self.block_builder.clear_blocks()
         self.display.reset()
-        # self.display.set_chords(self.graph.get_children())  # need to have a reset function.
-        # self.block_builder.clear_blocks()
-        # self.display.set_phrase_controls()
+        self.display.set_phrase_controls()
 
     # Loads phrase building mode, takes existing phrases in the song
     # and displays them so the user can pick up where they left off.
@@ -217,6 +215,14 @@ class ChordSelection(object):
             self.graph.set_chord(1, start_chord_name)  # 1 indexed
         if end_chord_name is not None:
             self.graph.set_chord(phrase_length, end_chord_name)
+
+        # here you should restart if there is no path
+        if self.graph.no_path:
+            self.display.info.text = "These constraints are not possible!"
+            self.reset_chord_building()  # 
+            return
+
+
         self.display.set_phrase_length(phrase_length)
 
         # The block_builder builds phrases together and clears after each
@@ -244,9 +250,8 @@ class ChordSelection(object):
         self.create_graph_and_builders(self.phrase_length, self.start_chord_name, self.end_chord_name)
 
     def on_undo_phrase_ctrl_button_click(self, instance):
-        # reset everything
+    #     # reset everything
         self.reset_chord_building()
-        self.display.set_phrase_controls()
         
 
     # Just a testing function.

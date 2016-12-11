@@ -31,6 +31,7 @@ class ChordGraph(Graph):
         # possible children: c[t,i,j] is 1 if j is a child of i
         # where j is at time t, t starts at 0
         self.set_max_steps(self.T)
+        self.no_path = False
 
 
     def set_max_steps(self, t):
@@ -96,7 +97,7 @@ class ChordGraph(Graph):
         """
         if external:
             self.constraints[t] = values
-        if t < 1:
+        if t < 0:
             return
         else:
             # i cannot take any value that is NOT in this set
@@ -118,17 +119,23 @@ class ChordGraph(Graph):
             # backpropagate change all the way to the beginning
             self.add_constraint(t-1, new_values, False)
 
+        # check if there is a path through the graph. If not, start over
+        if np.linalg.norm(reduce(np.dot,self.C)) == 0:
+            self.no_path = True
+
     def set_chord(self, t, chord_name):
 
         # t-1 to map it to 0-indexed. it is originally 1-indexed
         if chord_name != 'NA':
             self.add_constraint(t-1, [self.rn.sd_rev_map[chord_name]], True)
 
+
     def undo_selection(self):
         self.chord_stack.pop()
 
     def reset(self):
         self.chord_stack = []
+        self.no_path = False
 
     def get_children(self):
         # Returns the set of next possible chords given current state.

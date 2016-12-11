@@ -25,7 +25,6 @@ class ChordSelectionScreen(Widget):
         self.current_progression_layout.reset()
         self.chord_selection_layout.reset()
         self.set_phrase_controls()
-        self.info.text = ""
 
     def inactivate(self):
         self.remove_widget(self.current_progression_layout)
@@ -125,7 +124,7 @@ class ChordSelectionScreen(Widget):
 
     def add_phrase_length_label(self, phrase_length):
         text = "Phrase Length: " + str(phrase_length)
-        self.info.text += text
+        self.info.text = text  # always the first thing
 
     def add_start_chord_label(self, start_chord):
         text = "    Start Chord: " + str(start_chord)
