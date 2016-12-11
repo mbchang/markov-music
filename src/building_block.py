@@ -15,7 +15,7 @@ class BuildingBlock(object):
 
 
 class Chord(BuildingBlock):
-    def __init__(self, notes=[60, 64, 67], name='I',inversion='R'):
+    def __init__(self, notes=[0, 4, 7], name='I',inversion='R'):
         super(Chord, self).__init__()
         # always represent chord in canonical triad form
         # use expand_chord() to generate other notes

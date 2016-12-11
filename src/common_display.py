@@ -18,6 +18,7 @@ import math
 class MenuButton(Button):
     def __init__(self, pos_hint, size_hint, label):
         super(MenuButton, self).__init__(pos_hint=pos_hint, size_hint=size_hint, text=label)
+        self.label = label
         self.background_normal = ''
         self.background_color = [0, .7, 0, .8]
 

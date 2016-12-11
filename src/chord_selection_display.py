@@ -31,6 +31,12 @@ class ChordSelectionScreen(Widget):
     def set_phrase_controls(self):
         self.chord_selection_layout.set_phrase_controls()
 
+    def set_phrase_length_csl(self):
+        self.chord_selection_layout.set_phrase_length_csl()
+
+    def set_chord_preselect(self, mode):
+        self.chord_selection_layout.set_chord_preselect(mode)
+
     def set_chords(self, chords):
         self.chord_selection_layout.set_chords(chords)
 
@@ -48,6 +54,15 @@ class ChordSelectionScreen(Widget):
 
     def set_phrase_control_callback(self, callback):
         self.chord_selection_layout.set_phrase_control_callback(callback)
+
+    def set_phrase_length_csl_callback(self, callback):
+        self.chord_selection_layout.set_phrase_length_csl_callback(callback)
+
+    def set_start_chord_select_callback(self, callback):
+        self.chord_selection_layout.set_start_chord_select_callback(callback)
+
+    def set_end_chord_select_callback(self, callback):
+        self.chord_selection_layout.set_end_chord_select_callback(callback)
 
     def set_play_button_callback(self, callback):
         self.current_progression_layout.set_play_button_callback(callback)
@@ -155,7 +170,7 @@ class CurrentProgressionLayout(RelativeLayout):
     def set_save_button_callback(self, callback):
         self.save_button.set_callback(callback)
 
-    def set_phrase_length(self, phrase_length):
+    def set_phrase_length(self, phrase_length):  # TODO
         self.phrase_length = phrase_length
 
     def show_save_button(self):
@@ -220,8 +235,39 @@ class ChordSelectionLayout(RelativeLayout):
         self.buttons.append(MenuButton({'center_x':2.0/3, 'center_y':0.5}, (0.2,0.2), 'Unconstrained'))
         for button in self.buttons:
             if self.node_button_callback is None:
-                raise Exception("No node button callback.")
+                raise Exception("No phrase control button callback.")
             button.set_callback(self.phrase_control_callback)
+            self.add_widget(button)
+
+    def set_phrase_length_csl(self):
+        self.reset()
+        max_length = 8
+        for i in range(max_length):
+            pos_hint = {'center_x': (1.0 + i)/(1+max_length), 'center_y': .5}
+            size_hint = (1.0/(1 + max_length)*.75, .2)
+            self.buttons.append(MenuButton(pos_hint, size_hint,str(i)))
+        for button in self.buttons:
+            if self.node_button_callback is None:
+                raise Exception("No phrase control button callback.")
+            button.set_callback(self.phrase_length_csl_callback)  # TODO
+            self.add_widget(button)
+
+    def set_chord_preselect(self, mode):
+        self.reset()
+        chords = ['I','ii','iii','IV','V','vi','vii0']
+        for i in range(len(chords)):
+            pos_hint = {'center_x': (1.0 + i)/(1+len(chords)), 'center_y': .5}
+            size_hint = (1.0/(1 + len(chords))*.75, .2)
+            self.buttons.append(MenuButton(pos_hint, size_hint, chords[i]))
+        for button in self.buttons:
+            if self.node_button_callback is None:
+                raise Exception("No start or end button callback.")
+            if mode == 'start':
+                button.set_callback(self.start_chord_select_callback)
+            elif mode == 'end':
+                button.set_callback(self.end_chord_select_callback)
+            else:
+                raise Exception("unknown mode")
             self.add_widget(button)
 
 
@@ -242,6 +288,15 @@ class ChordSelectionLayout(RelativeLayout):
 
     def set_phrase_control_callback(self, callback):
         self.phrase_control_callback = callback
+
+    def set_phrase_length_csl_callback(self, callback):
+        self.phrase_length_csl_callback = callback
+
+    def set_start_chord_select_callback(self, callback):
+        self.start_chord_select_callback = callback
+
+    def set_end_chord_select_callback(self, callback):
+        self.end_chord_select_callback = callback
 
 class ChangeModeButton(Button):
     def __init__(self, pos_hint, size_hint, label):

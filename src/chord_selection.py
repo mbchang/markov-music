@@ -24,10 +24,19 @@ class ChordSelection(object):
         self.display.set_preview_button_callback(self.on_preview_button_click)
         self.display.set_change_mode_button_callback(self.on_change_mode_button_click)
 
+        self.active = False
+
+        # Mode is either 'chords' or 'phrases'
+        self.mode = 'chords'
+
         # phrase length
         # this controls the phrase length
         self.phrase_length = None
         self.display.set_phrase_control_callback(self.on_phrase_control_button_click)
+        self.display.set_phrase_length_csl_callback(self.on_phrase_length_csl_button_click)
+        self.display.set_start_chord_select_callback(self.on_start_chord_button_click)
+        self.display.set_end_chord_select_callback(self.on_end_chord_button_click)
+
 
         # Initialize graph
         self.display.set_phrase_controls()
@@ -46,12 +55,9 @@ class ChordSelection(object):
 
         # }
 
-        self.active = False
 
-        # Mode is either 'chords' or 'phrases'
-        self.mode = 'chords'
 
-        assert self.phrase_length is not None
+        # assert self.phrase_length is not None
 
         # Initialize some chords.
         # self.display.set_chords(self.graph.get_children())
@@ -172,25 +178,40 @@ class ChordSelection(object):
             raise ModeException()
 
     def on_phrase_control_button_click(self, instance):
-        
+        if instance.label == 'Unconstrained':
+            self.phrase_length = 8
+            self.create_graph_and_builders(self.phrase_length)
+        else:
+            self.phrase_length = 3  # you have to do something else here
+            self.display.set_phrase_length_csl()  # this will set self.phrase_length and do everything else
 
+    def create_graph_and_builders(self, phrase_length):
+        # add constraints based on start and end
 
-        print 'heyeey'
-
-        # {}
-        self.phrase_length = 8
-        self.graph.set_max_steps(self.phrase_length)
-        self.display.set_phrase_length(self.phrase_length)
+        self.graph.set_max_steps(phrase_length)
+        self.display.set_phrase_length(phrase_length)
 
         # The block_builder builds phrases together and clears after each
         # phrase is made.
         # The song_builder builds the entire song and persistently stores it.
-        self.block_builder = BlockBuilder(phrase_length=8)
-        self.song_builder = BlockBuilder(phrase_length=40)
+        self.block_builder = BlockBuilder(phrase_length=phrase_length)
+        self.song_builder = BlockBuilder(phrase_length=phrase_length*5)
+        self.display.set_chords(self.graph.get_children())      
 
-        # }
+    def on_phrase_length_csl_button_click(self, instance):
+        self.phrase_length = int(instance.label)
+        print 'phrase length', self.phrase_length
+        self.display.set_chord_preselect('start')
 
+    def on_start_chord_button_click(self, instance):
+        self.start_chord_name = instance.label
+        print 'start chord', self.start_chord_name
+        self.display.set_chord_preselect('end')
 
+    def on_end_chord_button_click(self, instance):
+        self.end_chord_name = instance.label
+        print 'end chord', self.end_chord_name
+        self.create_graph_and_builders(self.phrase_length)
 
     # Just a testing function.
     def test_play_note(self):
