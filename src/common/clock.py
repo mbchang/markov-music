@@ -167,6 +167,7 @@ class Scheduler(object):
             idx = self.commands.index(cmd)
             del self.commands[idx]
 
+
     # on_update should be called as often as possible.
     # the only trick here is to make sure we remove the command BEFORE
     # calling the command's function.
@@ -198,34 +199,36 @@ class AudioScheduler(object):
 
         self.generator = None
         self.cur_frame = 0
+        self.just_cleared = False
 
     def set_generator(self, gen) :
         self.generator = gen
 
     def generate(self, num_frames, num_channels) :
-        output = np.empty(num_channels * num_frames, dtype = np.float32)
+        output = np.zeros(num_channels * num_frames, dtype = np.float32)
         o_idx = 0
 
-        # the current period of time goes from self.cur_frame to end_frame
-        end_frame = self.cur_frame + num_frames
+        if not self.just_cleared:
+            # the current period of time goes from self.cur_frame to end_frame
+            end_frame = self.cur_frame + num_frames
 
-        # advance time and fire off commands for this time frame
-        while self.commands:
-            # find the exact frame at which the next command should happen
-            cmd_tick = self.commands[0].tick
-            cmd_time = self.tempo_map.tick_to_time(cmd_tick)
-            cmd_frame = int(cmd_time * kSampleRate)
+            # advance time and fire off commands for this time frame
+            while self.commands:
+                # find the exact frame at which the next command should happen
+                cmd_tick = self.commands[0].tick
+                cmd_time = self.tempo_map.tick_to_time(cmd_tick)
+                cmd_frame = int(cmd_time * kSampleRate)
 
-            if cmd_frame < end_frame:
-                o_idx = self._generate_until(cmd_frame, num_channels, output, o_idx)
-                command = self.commands.pop(0)
-                command.execute()
-            else:
-                break
+                if cmd_frame < end_frame:
+                    o_idx = self._generate_until(cmd_frame, num_channels, output, o_idx)
+                    command = self.commands.pop(0)
+                    command.execute()
+                else:
+                    break
 
-        self._generate_until(end_frame, num_channels, output, o_idx)
+            self._generate_until(end_frame, num_channels, output, o_idx)
 
-        return output, True
+        return output, True 
 
     # generate audio from self.cur_frame to to_frame
     def _generate_until(self, to_frame, num_channels, output, o_idx) :
@@ -254,7 +257,7 @@ class AudioScheduler(object):
     def post_at_tick(self, tick, func, arg = None) :
         now_time  = self.get_time()
         post_time = self.tempo_map.tick_to_time(tick)
-
+        self.just_cleared = False
         if post_time <= now_time:
             func(tick, arg)
             return None
@@ -270,6 +273,11 @@ class AudioScheduler(object):
         if cmd in self.commands:
             idx = self.commands.index(cmd)
             del self.commands[idx]
+
+    def clear(self):
+        self.just_cleared = True
+        self.commands = []
+
 
     def now_str(self):
         time = self.get_time()

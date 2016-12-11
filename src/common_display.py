@@ -70,6 +70,20 @@ class Bubble(InstructionGroup):
     def on_update(self, dt):
         pass
 
+class LineDivider(InstructionGroup):
+    def __init__(self,first_point,second_point,rgba):
+        super(LineDivider, self).__init__()
+        self.first_point = first_point
+        self.second_point = second_point
+        self.color = Color(*rgba)
+        self.add(self.color)
+        self.points = [first_point[0],first_point[1],second_point[0],second_point[1]]
+        self.line = Line(points=self.points,width=5)
+        self.add(self.line)
+
+    def on_update(self, dt):
+        return True
+
 class RandomMovingBubble(InstructionGroup):
     def __init__(self, pos, size=40):
         super(RandomMovingBubble, self).__init__()

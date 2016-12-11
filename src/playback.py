@@ -23,6 +23,7 @@ class Playback(object):
     def inactivate(self):
         self.active = False
         print 'playback inactivate'
+        self.audio_control.clear_sounds()
         self.display.inactivate()
 
     def play(self):

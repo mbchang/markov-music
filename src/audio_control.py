@@ -32,15 +32,19 @@ class AudioController(object):
         # Keep track of current preview cmds.
         self.previews = []
 
+
         # Set up ability to modulate.
         self.transpose_steps = 60  # C Major
+
+    def set_click_gfx(self, function):
+        self.click_gfx = function
 
     def transpose(self, steps):
         self.transpose_steps += steps
 
     def get_current_chord(self):
         now = self.sched.get_tick()
-        prev_chord = None
+        prev_chord = Chord()
         for time_chord in self.time_chords:
             if now < time_chord[0]:
                 return prev_chord
@@ -91,6 +95,7 @@ class AudioController(object):
     def play_scheduled_note(self,tick, note_duration_tuple):
         note = note_duration_tuple[0]
         duration = note_duration_tuple[1]
+        self.click_gfx()
         self.play_note(note, duration=duration, synth_settings = (0, 5))
 
     def play_scheduled_bass_note(self, tick, note_duration_tuple):
@@ -122,6 +127,9 @@ class AudioController(object):
             note = chord.get_bottom() 
             self.sched.post_at_tick(time,self.play_scheduled_bass_note, (note, kTicksPerQuarter * self.tick_duration / 4))
             time += kTicksPerQuarter/4
+
+    def clear_sounds(self):
+        self.sched.clear()
 
     def set_setting(self, setting):
         self.setting = setting

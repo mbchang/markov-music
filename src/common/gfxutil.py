@@ -105,6 +105,12 @@ class AnimGroup(InstructionGroup) :
     def size(self):
         return len(self.objects)
 
+    def clear_all(self):
+
+        for o in self.objects:
+            self.remove(o)
+        self.objects = []
+
 
 # A graphics object for displaying a point moving in a pre-defined 3D space
 # the 3D point must be in the range [0,1] for all 3 coordinates.
