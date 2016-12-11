@@ -259,9 +259,5 @@ class PhraseBank(Graph):
 
     # Returns the options for the first phrase of a song.
     def get_starting_phrases(self):
-        # For now, say that we can start the song with any phrase that begins
-        # with a I chord.
-
-        # TODO: need to enforce this when user selects chords
-        return self.prefixes[Chord().get_name()]
+        return self.prefixes.values()[0]
 
