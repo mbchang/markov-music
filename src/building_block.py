@@ -15,12 +15,25 @@ class BuildingBlock(object):
     def get_sound():
         pass
 
+#  C   D   E   F   G   A   B  C
+# [60, 62, 64, 65, 67, 69, 71, 72]
+# chord_notes_map = {
+#     'I': [60, 64, 67],
+#     'ii': [62, 65, 69],
+#     'iii': [64, 67, 71],
+#     'IV': [65, 69, 72],
+#     'V': [67, 71, 74],
+#     'vi': [69, 72, 76],
+#     'vii0': [71, 74, 77]
+# }
 
 class Chord(BuildingBlock):
     def __init__(self, notes=[0, 4, 7], name='I',inversion=0):
         super(Chord, self).__init__()
         # always represent chord in canonical triad form
         # use expand_chord() to generate other notes
+        # Should maintain invariant that self.notes is always sorted in
+        # increasing order.
         self.notes = notes
         self.name = name
         self.root = notes[0]
@@ -30,9 +43,22 @@ class Chord(BuildingBlock):
         # It will always be 0, so we are always working in C major,
         # and if desired, any modulation is done at the audio control.
         self.scale_root = 0
+        # Set the min and max notes, so we stay in generally the same
+        # octave no matter what inversion we're in.
+        # Then, we can use the expand chords function to fill multiple octaves.
+        self.min_note = 48 # C below middle C
+        self.max_note = 84 # C two octaves above middle C
 
     def get_scale_root(self):
         return self.scale_root
+
+    def get_number_inversions(self):
+        # TODO: Update this function if we introduce more types of chords.
+        if '7' in self.name:
+            return 4
+        # All others are triads.
+        else:
+            return 3
 
     def get_possible_melody_notes(self):
         root_note = self.get_scale_root()
@@ -63,6 +89,10 @@ class Chord(BuildingBlock):
 
     def set_notes(self, notes):
         self.notes = notes
+        if max(notes) > self.max_note:
+            raise Exception("Max note is 76, cannot have %d" % max(notes))
+        if min(notes) < self.min_note:
+            raise Exception("Min note is 55, cannot have %d" % min(notes))
 
     def possibly_add_seventh(self):
         # most common sevenths are V7, iim7, vim7
@@ -88,6 +118,12 @@ class Chord(BuildingBlock):
         return notes
 
     def get_notes(self):
+        return self.notes
+
+    def get_expanded_notes(self):
+        return self.expand_chord(self.notes)
+
+    def get_expanded_canonical_notes(self):
         canonical_notes = self._get_canonical_notes()
         return self.expand_chord(canonical_notes)
 
@@ -134,9 +170,31 @@ class Chord(BuildingBlock):
         return self.inversion
 
     def set_inversion(self, inversion):
-        self.inversion = inversion
+        """
+            Set the inversion of a chord, and updates the notes.
+        """
+        assert(inversion >= 0 and inversion < self.get_number_inversions())
+        if self.inversion == inversion:
+            return
+        old_inversion = self.inversion
+        # Rotate the notes appropriately.
+        diff = inversion - old_inversion
+        if diff < 0:
+            diff = self.get_number_inversions() + diff
+            # Drop an octave for the notes that have been rotated down.
+            new_notes = map(lambda x: x - 12, self.notes[diff:]) + self.notes[:diff]
+        else:
+            # Add an octave for the notes that have been rotated up.
+            new_notes = self.notes[diff:] + map(lambda x: x + 12, self.notes[:diff])
+        # Wrap around if the notes are too high.
+        if min(new_notes) < self.min_note:
+            new_notes = map(lambda x: x + 12, new_notes)
+        elif max(new_notes) > self.max_note:
+            new_notes = map(lambda x: x - 12, new_notes)
+        self.notes = new_notes
 
-
+    def duplicate(self):
+        return Chord(notes=self.notes, name=self.name, inversion=self.inversion)
 
 # Phrase is a building block and a node group.
 class Phrase(BuildingBlock):

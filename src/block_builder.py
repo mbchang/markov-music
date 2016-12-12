@@ -41,6 +41,9 @@ class BlockBuilder(object):
     def get_current_blocks(self):
         return self.blocks
 
+    def set_blocks(self, blocks):
+        self.blocks = blocks
+
     # Returns an array of the chords, in order.
     # If the blocks are phrases, this flattens them and returns just an array of chords.
     def get_flattened_chords(self):
