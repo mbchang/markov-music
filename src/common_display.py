@@ -48,6 +48,54 @@ class NodeButton(Button):
     def set_callback(self, callback):
         self.bind(on_press=callback)
 
+
+class BubbleWiggleToCenter(InstructionGroup):
+    def __init__(self, pos, r, color, duration = 3):
+        super(BubbleWiggleToCenter, self).__init__()
+
+        center_x = Window.width/2
+        center_y = Window.height/2
+        x = []
+        x.append((0,r))
+        # this creates a bunch of tuples so that we can make a kfanim across
+        # a lot of different points. It basically adds a sin wave on top of the
+        # regularly scheduled decrease in radius
+        for i in range(100):
+            time = .1 + i*duration/100.
+            radius = 2 * r * (100. - i) / 100 * (1 + 0.2 * np.sin(i / 2.))
+            x.append((time, radius))
+
+        self.radius_anim = KFAnim(*x)
+
+        # the position still goes linearly
+        self.pos_anim = KFAnim((0, pos[0], pos[1]), (duration, center_x, center_y))
+
+        self.color = Color(*color)
+        self.add(self.color)
+
+        self.circle = CEllipse(cpos = pos, size = (2*r, 2*r), segments = 40)
+        self.add(self.circle)
+
+        self.time = 0
+        self.on_update(0)
+
+    def on_update(self, dt):
+        # animate radius
+        rad = self.radius_anim.eval(self.time)
+        self.circle.csize = (2*rad, 2*rad)
+
+        # animate position
+        pos = self.pos_anim.eval(self.time)
+        self.circle.cpos = pos
+
+        # advance time
+        self.time += dt
+        # continue flag
+        return self.radius_anim.is_active(self.time)
+
+
+
+
 # A generic bubble.
 class Bubble(InstructionGroup):
     def __init__(self, pos, rgb, size):

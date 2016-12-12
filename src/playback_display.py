@@ -13,6 +13,7 @@ class PlaybackDisplay(Widget):
         self.anim_group = AnimGroup()
         self.canvas.add(self.anim_group)
         self.audio_control.set_click_gfx(self.create_bubbles)
+        self.audio_control.set_note_gfx(self.create_background_bubbles)
         self.last_touch_pos = None
 
 
@@ -30,6 +31,19 @@ class PlaybackDisplay(Widget):
             rmb = RandomMovingBubble(self.last_touch.pos)
             self.anim_group.add(rmb)
 
+    def create_background_bubbles(self):
+        duration = 2
+        fun_bubble1 = BubbleWiggleToCenter((0,0), 10, (0,1,0), duration = duration)
+        fun_bubble2 = BubbleWiggleToCenter((Window.width,0), 10, (0,1,0), duration = duration)
+        fun_bubble3 = BubbleWiggleToCenter((0,Window.height), 10, (0,1,0), duration = duration)
+        fun_bubble4 = BubbleWiggleToCenter((Window.width,Window.height), 10, (0,1,0), duration = duration)
+
+        self.anim_group.add(fun_bubble1)
+        self.anim_group.add(fun_bubble2)
+        self.anim_group.add(fun_bubble3)
+        self.anim_group.add(fun_bubble4)
+
+
     def activate(self):
         self.line1 = LineDivider((-5,Window.height/4.),(Window.width+5,Window.height/4.),(1,0,0,0.6))
         self.line2 = LineDivider((-5,Window.height/2.),(Window.width+5,Window.height/2.),(1,0,0,0.6))
@@ -37,6 +51,7 @@ class PlaybackDisplay(Widget):
         self.anim_group.add(self.line1)
         self.anim_group.add(self.line2)
         self.anim_group.add(self.line3)
+
 
 
     def inactivate(self):

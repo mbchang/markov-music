@@ -25,6 +25,7 @@ class AudioController(object):
         self.audio.set_generator(self.sched)
         self.sched.set_generator(self.synth)
         self.tick_duration = 60./self.bpm / kTicksPerQuarter
+        self.note_gfx = None
 
         self.time_chords = []
         self.setting = "selection"
@@ -32,12 +33,30 @@ class AudioController(object):
         # Keep track of current preview cmds.
         self.previews = []
 
+        self.piano_velocity = 100
+        rhythm0 = [960,960]
+        rhythm1 = [240,360,240,240,360,240,240]
+        rhythm2 = [720,720,480]
+        rhythm3 = [320,320,160,320,320,320,160]
+        rhythm4 = [480, 960, 480]
+        rhythm5 = [120,240,240,240,240,360,240,240]
+        self.rhythm_counter = 0
+        self.rhythms = [rhythm0,rhythm1,rhythm2,rhythm3,rhythm4,rhythm5]
 
         # Set up ability to modulate.
         self.transpose_steps = 60  # C Major
 
     def set_click_gfx(self, function):
         self.click_gfx = function
+
+    def set_note_gfx(self, function):
+        self.note_gfx = function
+
+    def get_rhythm_text(self):
+        if self.setting == "rhythm":
+            return str(self.rhythm_counter)
+        else:
+            return "<none>"
 
     def transpose(self, steps):
         self.transpose_steps += steps
@@ -62,7 +81,7 @@ class AudioController(object):
             chord = chords[chord_idx]
             time = now + chord_idx * 4 * kTicksPerQuarter
             self.time_chords.append((time,chord))
-            self.sched.post_at_tick(time, self.play_scheduled_chord, chord)
+            self.sched.post_at_tick(time, self.play_scheduled_chord_line, chord)
 
     def play_preview(self, chords):
         self.clear_previous_previews()
@@ -71,7 +90,7 @@ class AudioController(object):
         for chord_idx in range(len(chords)):
             chord = chords[chord_idx]
             time = now + chord_idx * kTicksPerQuarter
-            self.previews.append(self.sched.post_at_tick(time, self.play_scheduled_chord, chord))
+            self.previews.append(self.sched.post_at_tick(time, self.play_scheduled_chord_line, chord))
 
     def clear_previous_previews(self):
         for preview_cmd in self.previews:
@@ -104,17 +123,39 @@ class AudioController(object):
         self.play_note(note, duration=duration, synth_settings = (0, 1))
 
 
-    def play_scheduled_chord(self, tick, chord):
+    def play_scheduled_chord_line(self, tick, chord):
+        self.piano_velocity = 100
+
         if self.setting == "selection":
             self.play_chord(chord, kTicksPerQuarter * self.tick_duration * 0.9)
         if self.setting == "basic":
+            self.note_gfx()
             self.play_chord(chord, kTicksPerQuarter * self.tick_duration * 4)
         if self.setting == "arpeggiator":
             self.play_arpeg_chord(chord)
+        if self.setting == "rhythm":
+            self.piano_velocity = 75
+            rhythm = self.rhythms[self.rhythm_counter]
+            self.play_rhythm_chord(chord,rhythm)
+
+    def play_scheduled_chord(self, tick, chord_duration):
+        self.play_chord(*chord_duration)
+        self.note_gfx()
+
+
+
+    def play_rhythm_chord(self, chord, rhythm):
+        time = self.sched.get_tick()
+        for note_duration in rhythm:
+            self.sched.post_at_tick(time,self.play_scheduled_chord, (chord,note_duration * self.tick_duration*0.95))
+            time += note_duration
+
+
 
     def play_arpeg_chord(self, chord):
         time = self.sched.get_tick()
         for i in range(4):
+            self.note_gfx()
             note = chord.get_bottom() - 12
             self.sched.post_at_tick(time,self.play_scheduled_bass_note, (note, kTicksPerQuarter * self.tick_duration / 4))
             time += kTicksPerQuarter/4            
@@ -135,10 +176,15 @@ class AudioController(object):
         self.setting = setting
 
     def toggle_setting(self, setting):
-        if self.setting == setting:
-            self.setting = "basic"
-        else:
+        if setting == "rhythm":
             self.setting = setting
+            self.rhythm_counter = self.rhythm_counter+1 % len(self.rhythms)
+        else:
+            self.rhythm_counter = 0
+            if self.setting == setting:
+                self.setting = "basic"
+            else:
+                self.setting = setting
 
     def play_chord(self, chord, duration=1):
         notes = chord.get_notes()
@@ -152,7 +198,7 @@ class AudioController(object):
         pitch = pitch + self.transpose_steps
         now = self.sched.get_tick()
         self.synth.program(self.channel,synth_settings[0],synth_settings[1])
-        self.synth.noteon(self.channel, pitch, velocity)
+        self.synth.noteon(self.channel, pitch, self.piano_velocity)
         self.sched.post_at_tick(now + int(duration * kTicksPerQuarter),
                                 self.note_off, pitch)
         self.synth.program(self.channel,self.patch[0],self.patch[1])

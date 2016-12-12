@@ -38,7 +38,13 @@ class Chord(BuildingBlock):
         root_note = self.get_scale_root()
         rn_map = {'I': 0, 'ii': 2, 'iii': 4,
                 'IV': 5, 'V': 7, 'vi': 9, 'vii0': 11}
-        root_note += rn_map[self.name]
+        name = ""
+        if '7' in self.name:
+            name = self.name[:-1]
+        else:
+            name = self.name
+
+        root_note += rn_map[name]
         major = True
         dim = False
         if self.name.upper() != self.name:
