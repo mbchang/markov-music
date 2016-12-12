@@ -197,6 +197,10 @@ class ChordSelection(object):
             # Requires reloading the previously saved song.
             self.mode = 'phrases'
             self.load_phrase_builder()
+            self.display.hide_undo_phrase_ctrl_button()
+            self.display.show_save_button()
+            self.display.show_undo_button()
+            self.display.show_play_button()
             self.display.set_change_mode_button_text('Go To Chord Mode')
         else:
             raise ModeException()
@@ -254,7 +258,6 @@ class ChordSelection(object):
     #     # reset everything
         self.reset_chord_building()
         
-
     # Just a testing function.
     def test_play_note(self):
         self.audio_control.play_note(60)
