@@ -348,7 +348,7 @@ class ChordSelectionLayout(RelativeLayout):
     def set_chord_preselect(self, mode):
         self.reset()
         chords = ['I','ii','iii','IV','V','vi','vii0', 'NA']
-        instructions = "Select " + mode + " length"
+        instructions = "Select " + mode + " chord"
         self.instructions.text = instructions
         print chords
         for i in range(len(chords)):
