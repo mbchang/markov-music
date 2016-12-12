@@ -82,7 +82,7 @@ class AudioController(object):
         upper = min(len(melody_notes) - 1, base_index + 1)
         possible_notes = melody_notes[lower:upper + 1]
         note = random.choice(possible_notes)
-        
+
         divider = y_block + 1
         now = self.sched.get_tick()
         time = now - (now % (kTicksPerQuarter / divider)) + (kTicksPerQuarter / divider)
@@ -112,14 +112,14 @@ class AudioController(object):
         for i in range(4):
             note = chord.get_bottom() - 12
             self.sched.post_at_tick(time,self.play_scheduled_bass_note, (note, kTicksPerQuarter * self.tick_duration / 4))
-            time += kTicksPerQuarter/4            
+            time += kTicksPerQuarter/4
             note = chord.get_middle() - 12
             self.sched.post_at_tick(time,self.play_scheduled_bass_note, (note, kTicksPerQuarter * self.tick_duration / 4))
             time += kTicksPerQuarter/4
             note = chord.get_top() - 12
             self.sched.post_at_tick(time,self.play_scheduled_bass_note, (note, kTicksPerQuarter * self.tick_duration / 4))
             time += kTicksPerQuarter/4
-            note = chord.get_bottom() 
+            note = chord.get_bottom()
             self.sched.post_at_tick(time,self.play_scheduled_bass_note, (note, kTicksPerQuarter * self.tick_duration / 4))
             time += kTicksPerQuarter/4
 
@@ -133,7 +133,7 @@ class AudioController(object):
             self.setting = setting
 
     def play_chord(self, chord, duration=1):
-        notes = chord.get_notes()
+        notes = chord.get_expanded_notes()
         for note in notes:
             self.play_note(note, duration=duration)
 
