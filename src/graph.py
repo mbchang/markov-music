@@ -22,16 +22,23 @@ class ChordGraph(Graph):
         self.chord_stack = []
         self.rn = RomanNumeral()
         self.scale_root = 0  # normalized
+        self.constraints = {}
 
-        self.T = 8
+        self.T = 8  # default 
         self.S = 7
         self.TM = self._build_transition_matrix()
 
         # possible children: c[t,i,j] is 1 if j is a child of i
         # where j is at time t, t starts at 0
-        self.C = np.tile(self.TM,(self.T,1,1)) # [T-1, S, S]
+        self.set_max_steps(self.T)
+        self.no_path = False
 
-        self.add_constraint(6,set([0,4]))  # it can only end in I or V
+
+    def set_max_steps(self, t):
+        # like a reset
+        self.T = t
+        self.C = np.tile(self.TM,(self.T,1,1)) # [T-1, S, S]  # perhaps you can rebuild every time you do get_children
+        self.constraints = {}
 
     def _build_transition_matrix(self):
             # t[i,j] is prob i transitions to j
@@ -76,17 +83,20 @@ class ChordGraph(Graph):
 
     def make_selection(self, chord):
         self.chord_stack.append(chord)
+        print self.constraints
 
     # TODO: make an undo_constraint:
     # perhaps we can generate a stack of constraints: (chord_idx, original_vals, new_vals)
     # TODO: add safety mechanism such that the user cannot specify a constraint that kills all possible paths
     # TODO: if this is called by an outside method, then we'd need to figure out a mapping
-    def add_constraint(self, t, values):
+    def add_constraint(self, t, values, external):
         """
             t: in range [0,7]
             chord_idx: in range [0,6] = [I, ii, iii, IV, V, vi, vii0]
             values: set of values that are in range [0,6] = [I, ii, iii, IV, V, vi, vii0]
         """
+        if external:
+            self.constraints[t] = values
         if t < 0:
             return
         else:
@@ -104,8 +114,20 @@ class ChordGraph(Graph):
                     if self.C[t,i,j] == 1:
                         new_values.add(i)
 
+            print 'self.constraints', self.constraints
+
             # backpropagate change all the way to the beginning
-            self.add_constraint(t-1, new_values)
+            self.add_constraint(t-1, new_values, False)
+
+        # check if there is a path through the graph. If not, start over
+        if np.linalg.norm(reduce(np.dot,self.C)) == 0:
+            self.no_path = True
+
+    def set_chord(self, t, chord_name):
+
+        # t-1 to map it to 0-indexed. it is originally 1-indexed
+        if chord_name != 'NA':
+            self.add_constraint(t-1, [self.rn.sd_rev_map[chord_name]], True)
 
 
     def undo_selection(self):
@@ -113,44 +135,56 @@ class ChordGraph(Graph):
 
     def reset(self):
         self.chord_stack = []
+        self.no_path = False
 
     def get_children(self):
         # Returns the set of next possible chords given current state.
         current_idx = len(self.chord_stack)
+        if current_idx >= self.T:
+            return []
         current_chord = None if current_idx == 0 else self.chord_stack[-1]
-        children = self._get_children(current_chord, current_idx-1)
+
+        children = self._get_children(current_chord, current_idx)
         children_with_voice_leading = self._voice_leading(children)
         return children_with_voice_leading
+
+    def _get_chord_name(self, chord):
+        name = chord.get_name()
+        if name[-1] == '7':
+            return name[:-1]
+        else:
+            return name
 
     # can decide whether we want this to be in the chord class or not
     def _get_children(self, chord, current_idx):
         """ Gets children purely from chord transition rules. No viterbi
 
         """
-        if current_idx == -1:
+        if current_idx == 0:
             assert chord is None
             first_chords = self._sample_first_chords()
             return first_chords
         else:
             sr = chord.get_scale_root()
-            chord_idx = self.rn.sd_rev_map[chord.get_name()]
+            chord_idx = self.rn.sd_rev_map[self._get_chord_name(chord)]
             children_idx = list(self.C[current_idx, chord_idx].nonzero()[0])
             children = [self._generate_chord(self.rn.sd_map[ci], sr, 0) for ci in children_idx]
             return children
 
-
     def _sample_first_chords(self):
         sr = self.scale_root
-        common_first_notes = ['I','ii','iii','IV','V','vi','vii0']
-        # common_first_notes = ['I']
-        first_chords = [self._generate_chord(n, sr, 0) for n in common_first_notes]
+        if self.constraints.has_key(0):
+            first_notes = [self.rn.sd_map[x] for x in self.constraints[0]]
+        else:
+            first_notes = ['I','ii','iii','IV','V','vi','vii0'] #+ ['I']*100  # TODO
+        first_chords = [self._generate_chord(n, sr, 0) for n in first_notes]
         return first_chords
 
 
     # Get the possible chords based on only the chord transition rules.
     def get_children_no_constraint(self, chord):
         sr = chord.get_scale_root()
-        chord_idx = self.rn.sd_rev_map[chord.get_name()]
+        chord_idx = self.rn.sd_rev_map[self._get_chord_name(chord)]
         transition_row = self.TM[chord_idx, :]
         children_idx = []
         for i in xrange(len(transition_row)):
@@ -170,7 +204,12 @@ class ChordGraph(Graph):
         # first get the root of the chord
         chord_root = self.rn.rn_root_lookup(rn) + sr
         chord_notes = self.rn.get_chord_notes(chord_root, self.rn.get_rn_type(rn))
-        return Chord(chord_notes, rn, inv)
+
+        # here with some probability change the chord to 7th.
+        chord = Chord(chord_notes, rn, inv)
+        chord.possibly_add_seventh()
+
+        return chord
 
     def _voice_leading(self, next_chords):
         """
@@ -262,9 +301,5 @@ class PhraseBank(Graph):
 
     # Returns the options for the first phrase of a song.
     def get_starting_phrases(self):
-        # For now, say that we can start the song with any phrase that begins
-        # with a I chord.
-
-        # TODO: need to enforce this when user selects chords
-        return self.prefixes[Chord().get_name()]
+        return self.prefixes.values()[0]
 
