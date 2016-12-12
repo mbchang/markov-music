@@ -32,11 +32,11 @@ class PlaybackDisplay(Widget):
             self.anim_group.add(rmb)
 
     def create_background_bubbles(self):
-        duration = 2
-        fun_bubble1 = BubbleWiggleToCenter((0,0), 10, (0,1,0), duration = duration)
-        fun_bubble2 = BubbleWiggleToCenter((Window.width,0), 10, (0,1,0), duration = duration)
-        fun_bubble3 = BubbleWiggleToCenter((0,Window.height), 10, (0,1,0), duration = duration)
-        fun_bubble4 = BubbleWiggleToCenter((Window.width,Window.height), 10, (0,1,0), duration = duration)
+        duration = 1.5
+        fun_bubble1 = BubbleWiggleToCenter((0,0), 15, (0,1,0), duration = duration)
+        fun_bubble2 = BubbleWiggleToCenter((Window.width,0), 15, (0,1,0), duration = duration)
+        fun_bubble3 = BubbleWiggleToCenter((0,Window.height), 15, (0,1,0), duration = duration)
+        fun_bubble4 = BubbleWiggleToCenter((Window.width,Window.height), 15, (0,1,0), duration = duration)
 
         self.anim_group.add(fun_bubble1)
         self.anim_group.add(fun_bubble2)

@@ -53,6 +53,12 @@ class MarkovMusicWidget(BaseWidget):
             self.audio_control.toggle_setting("arpeggiator")
         if keycode[1] == 'r':
             self.audio_control.toggle_setting("rhythm")
+        if keycode[1] == ',':
+            self.audio_control.toggle_setting("background_instrument")
+        if keycode[1] == '.':
+            self.audio_control.toggle_setting("melody_instrument")
+        if keycode[1] == 'b':
+            self.audio_control.toggle_setting("basic")
 
     def on_touch_down(self, touch):
         if self.cs_mode:
@@ -94,6 +100,11 @@ class MarkovMusicWidget(BaseWidget):
             self.info.text = "Playback Mode\n"
             self.info.text += "a for arpeggiator\n"
             self.info.text += "r for rhythm. Current Rhythm: " + self.audio_control.get_rhythm_text()
+            self.info.text += "\n, for background instrument. Current Instrument: "
+            self.info.text += self.audio_control.get_bg_instrument_text()
+            self.info.text += "\n. for melody instrument. Current Instrument: "
+            self.info.text += self.audio_control.get_melody_instrument_text()
+
 
 # Set to full screen (commented out because unnecessary while developing).
 # Config.set('graphics', 'fullscreen', 0)
