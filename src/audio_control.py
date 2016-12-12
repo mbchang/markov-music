@@ -28,8 +28,8 @@ class AudioController(object):
         self.note_gfx = None
 
         self.good_patches = [((0,1),"piano"),((0,5),"synth_bells"),((0,10),"acoustic bells"),
-                             ((0,15),"dulcimer"),((0,42),"orchestra"),((0,82)"hey"),((0,8),"cool")
-                             ((0,31),"givemebrass"),((0,38),"onelasttry"),
+                             ((0,15),"dulcimer"),((0,42),"orchestra"),
+                             ((0,38),"groovysynth"),
                              ((0,62),"omgwhomadethissynth")]
         self.background_instrument_counter = 0
         self.melody_instrument_counter = 1
