@@ -74,6 +74,7 @@ class ChordSelection(object):
         self.block_builder.clear_blocks()
         self.display.reset()
         self.display.set_phrase_controls()
+        self.display.info.text = ""
 
     # Loads phrase building mode, takes existing phrases in the song
     # and displays them so the user can pick up where they left off.
@@ -89,6 +90,7 @@ class ChordSelection(object):
             self.display.set_chords(self.phrase_bank.get_starting_phrases())
 
     def on_save_button_click(self, instance):
+
         if self.mode == 'chords':
             self.phrase_bank.add_to_bank(Phrase(self.block_builder.get_current_blocks()))
             # After saving, reset everything.
@@ -187,7 +189,7 @@ class ChordSelection(object):
         if self.mode == 'phrases':
             self.mode = 'chords'
             # Switch back to chord building mode.
-            self.reset_chord_building()
+            self.reset_chord_building()  # this is a problem
             self.audio_control.clear_previous_previews()
             self.display.set_change_mode_button_text('Go To Phrase Mode')
         elif self.mode == 'chords':
@@ -195,6 +197,10 @@ class ChordSelection(object):
             # Requires reloading the previously saved song.
             self.mode = 'phrases'
             self.load_phrase_builder()
+            self.display.hide_undo_phrase_ctrl_button()
+            self.display.show_save_button()
+            self.display.show_undo_button()
+            self.display.show_play_button()
             self.display.set_change_mode_button_text('Go To Chord Mode')
         else:
             raise ModeException()
@@ -209,7 +215,7 @@ class ChordSelection(object):
 
     def create_graph_and_builders(self, phrase_length, start_chord_name=None, end_chord_name=None):
         # add constraints based on start and end
-
+        self.display.chord_selection_layout.instructions.text = ""
         self.graph.set_max_steps(phrase_length)
         if start_chord_name is not None:
             self.graph.set_chord(1, start_chord_name)  # 1 indexed
@@ -221,7 +227,6 @@ class ChordSelection(object):
             self.display.info.text = "These constraints are not possible!"
             self.reset_chord_building()  # 
             return
-
 
         self.display.set_phrase_length(phrase_length)
 
@@ -253,7 +258,6 @@ class ChordSelection(object):
     #     # reset everything
         self.reset_chord_building()
         
-
     # Just a testing function.
     def test_play_note(self):
         self.audio_control.play_note(60)

@@ -21,6 +21,7 @@ class ChordSelectionScreen(Widget):
               text_size=(Window.width, Window.height))
         self.add_widget(self.info)
 
+
     def reset(self):
         self.current_progression_layout.reset()
         self.chord_selection_layout.reset()
@@ -286,6 +287,9 @@ class ChordSelectionLayout(RelativeLayout):
         self.chords = []
         self.buttons = []
 
+        self.instructions = topleft_label()
+        self.add_widget(self.instructions)
+
     def reset(self):
         self.chords = []
         for button in self.buttons:
@@ -328,6 +332,8 @@ class ChordSelectionLayout(RelativeLayout):
 
     def set_phrase_length_csl(self):
         self.reset()
+        print self.instructions
+        self.instructions.text = "Select phrase length"
         max_length = 8
         for i in range(max_length-1):
             pos_hint = {'center_x': (1.0 + i)/(max_length), 'center_y': .5}
@@ -342,6 +348,8 @@ class ChordSelectionLayout(RelativeLayout):
     def set_chord_preselect(self, mode):
         self.reset()
         chords = ['I','ii','iii','IV','V','vi','vii0', 'NA']
+        instructions = "Select " + mode + " length"
+        self.instructions.text = instructions
         print chords
         for i in range(len(chords)):
             pos_hint = {'center_x': (1.0 + i)/(1+len(chords)), 'center_y': .5}
@@ -398,7 +406,7 @@ class ChangeModeButton(Button):
         self.text = text
 
 def topleft_label() :
-    l = Label(text = "text", valign='top', font_size='20sp',
-              pos=(Window.width * 0.5, Window.height * 0.4),
+    l = Label(text = "", valign='top',font_size='20sp',
+              pos=(Window.width * 0.1, Window.height * -0.3),
               text_size=(Window.width, Window.height))
     return l
