@@ -148,6 +148,13 @@ class ChordGraph(Graph):
         children_with_voice_leading = self._voice_leading(children)
         return children_with_voice_leading
 
+    def _get_chord_name(self, chord):
+        name = chord.get_name()
+        if name[-1] == '7':
+            return name[:-1]
+        else:
+            return name
+
     # can decide whether we want this to be in the chord class or not
     def _get_children(self, chord, current_idx):
         """ Gets children purely from chord transition rules. No viterbi
@@ -159,7 +166,7 @@ class ChordGraph(Graph):
             return first_chords
         else:
             sr = chord.get_scale_root()
-            chord_idx = self.rn.sd_rev_map[chord.get_name()]
+            chord_idx = self.rn.sd_rev_map[self._get_chord_name(chord)]
             children_idx = list(self.C[current_idx, chord_idx].nonzero()[0])
             children = [self._generate_chord(self.rn.sd_map[ci], sr, 0) for ci in children_idx]
             return children
@@ -177,7 +184,7 @@ class ChordGraph(Graph):
     # Get the possible chords based on only the chord transition rules.
     def get_children_no_constraint(self, chord):
         sr = chord.get_scale_root()
-        chord_idx = self.rn.sd_rev_map[chord.get_name()]
+        chord_idx = self.rn.sd_rev_map[self._get_chord_name(chord)]
         transition_row = self.TM[chord_idx, :]
         children_idx = []
         for i in xrange(len(transition_row)):
@@ -197,7 +204,12 @@ class ChordGraph(Graph):
         # first get the root of the chord
         chord_root = self.rn.rn_root_lookup(rn) + sr
         chord_notes = self.rn.get_chord_notes(chord_root, self.rn.get_rn_type(rn))
-        return Chord(chord_notes, rn, inv)
+
+        # here with some probability change the chord to 7th.
+        chord = Chord(chord_notes, rn, inv)
+        chord.possibly_add_seventh()
+
+        return chord
 
     def _voice_leading(self, next_chords):
         """

@@ -1,5 +1,7 @@
 ''' These classes are the building blocks for making phrases and sentences.'''
 
+import random
+
 class BuildingBlock(object):
     def __init__(self):
         pass
@@ -55,6 +57,15 @@ class Chord(BuildingBlock):
 
     def set_notes(self, notes):
         self.notes = notes
+
+    def possibly_add_seventh(self):
+        # most common sevenths are V7, iim7, vim7
+        # all involve adding a minor 7th on top
+        if self.name in ['ii','vi','V']:
+            # flip a coin
+            if random.random() < 0.5:
+                self.notes += [self.root+10]
+                self.name += '7'
 
     def _get_canonical_notes(self):
         # may be different from triad form
