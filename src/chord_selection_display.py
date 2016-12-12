@@ -187,7 +187,7 @@ class CurrentProgressionLayout(RelativeLayout):
 
     def add_preview_button(self, block, mode):
         if len(self.preview_buttons) >= self.max_blocks:
-            raise Exception("Cannot add, max number of blocks reached!")
+            print "Cannot add, max number of blocks reached!"
             return
         if mode == 'chords':
             # TODO: buttons are not vertically centered.
