@@ -3,6 +3,7 @@ to display to the user given some optional input constraints. '''
 
 from building_block import *
 import numpy as np
+import sys
 
 # Abstract class.
 class Graph(object):
@@ -24,7 +25,10 @@ class ChordGraph(Graph):
         self.scale_root = 0  # normalized
         self.constraints = {}
 
-        self.T = 8  # default 
+        # Viterbi matrix for current chords, for voice leading.
+        self.vm = []
+
+        self.T = 8  # default
         self.S = 7
         self.TM = self._build_transition_matrix()
 
@@ -84,6 +88,7 @@ class ChordGraph(Graph):
     def make_selection(self, chord):
         self.chord_stack.append(chord)
         print self.constraints
+        self._update_voice_leading_viterbi()
 
     # TODO: make an undo_constraint:
     # perhaps we can generate a stack of constraints: (chord_idx, original_vals, new_vals)
@@ -132,10 +137,12 @@ class ChordGraph(Graph):
 
     def undo_selection(self):
         self.chord_stack.pop()
+        self._update_voice_leading_viterbi()
 
     def reset(self):
         self.chord_stack = []
         self.no_path = False
+        self._update_voice_leading_viterbi()
 
     def get_children(self):
         # Returns the set of next possible chords given current state.
@@ -191,8 +198,7 @@ class ChordGraph(Graph):
             if transition_row[i] == 1:
                 children_idx.append(i)
         children = [self._generate_chord(self.rn.sd_map[ci], sr, 0) for ci in children_idx]
-        children_with_voice_leading = self._voice_leading(children)
-        return children_with_voice_leading
+        return children
 
     # need to generate notes given roman numeral, scale root, and inversion
     def _generate_chord(self, rn, sr, inv):
@@ -215,11 +221,15 @@ class ChordGraph(Graph):
         """
             Input: an array of next possible chords following the current chord_stack.
             Output: an array containing an entry for each possible next chord. The entry
-                    is an array that is the current chord stack + the next chord, all
-                    with optimal voice leading.
+                    is a tuple of the next chord (with correct inversion), and an array
+                    that is the current chord stack + the next chord, all with inversions.
         """
-        # For now, don't do anything.
-        return next_chords
+        chords_with_voice_leading = []
+
+        for next_chord in next_chords:
+            voice_lead_chords = self._do_voice_leading(next_chord)
+            chords_with_voice_leading.append((voice_lead_chords[-1], voice_lead_chords))
+        return chords_with_voice_leading
 
     def _do_voice_leading(self, chords):
         """
@@ -232,6 +242,125 @@ class ChordGraph(Graph):
         # Use Viterbi to find best inversions for all chords.
         pass
 
+    def _update_voice_leading_viterbi(self):
+        """
+            Updates the self.voice_leading_viterbi matrix, based on the current
+            self.chord_stack.
+
+            Should be called after adding or popping a chord from the chord stack.
+            And also needs to be called during reset().
+        """
+        # If chord_stack is empty, just clear the matrix.
+        if len(self.chord_stack) == 0:
+            self.vm = []
+            return
+        # Initialize matrix with one row per chord in self.chord_stack.
+        self.vm = [None for i in xrange(len(self.chord_stack))]
+        for i in xrange(len(self.chord_stack)):
+            num_inversions = self.chord_stack[i].get_number_inversions()
+            # Each entry in the row is itself an array, of length num_inversions
+            # possible for that chord.
+            self.vm[i] = [None for j in xrange(num_inversions)]
+            chord = self.chord_stack[i]
+            for j in xrange(num_inversions):
+                ch = chord.duplicate()
+                # Create a chord for this particular inversion.
+                ch.set_inversion(j)
+                # The entry in the matrix is a tuple of the cost, the chord, and the parent
+                # pointer, which should be the j index of the entry in the previous row that
+                # leads to this entry in the lowest cost path.
+                if i == 0:
+                    cost = 0
+                else:
+                    cost = sys.maxint
+                self.vm[i][j] = [cost, ch, None]
+        # Run Viterbi. Nothing to do if there's only one chord.
+        if len(self.chord_stack) == 1:
+            return
+        # Fill in the matrix appropriately,
+        # Basically, self.vm[i][j] is the min of the previous optimal + distance
+        # for each of the possible previous chords leading to that one.
+        for i in xrange(1, len(self.chord_stack)):
+            for j in xrange(len(self.vm[i])):
+                min_cost = sys.maxint
+                min_parent = None
+                for k in xrange(len(self.vm[i-1])):
+                    # The previous optimal, plus the distance to get from there to here.
+                    cost = self.vm[i-1][k][0] + self._get_distance(self.vm[i-1][k][1], self.vm[i][j][1])
+                    if cost < min_cost:
+                        min_cost = cost
+                        min_parent = k
+                self.vm[i][j][0] = min_cost
+                self.vm[i][j][2] = min_parent
+
+    def _get_distance(self, chord1, chord2):
+        """
+            Returns distance between the chords. If two chords have same number
+            of notes, then just sum the pairwise distances. Otherwise, for each
+            note in one chord, count the distance as the min distance to any
+            note in the other chord.
+        """
+        distance = None
+        n1, n2 = chord1.get_notes(), chord2.get_notes()
+        if len(n1) == len(n2):
+            distance = sum([abs(n1[i] - n2[i]) for i in xrange(len(n1))])
+        else:
+            # Just make it so that n1 is longer, for convenience.
+            if len(n1) < len(n2):
+                n1, n2 = n2, n1
+            distance = 0
+            for i in xrange(len(n1)):
+                # The first and last notes must connect to first and last notes
+                # of the other chord.
+                if i == 0:
+                    d = abs(n1[i] - n2[i])
+                elif i == len(n1) - 1:
+                    d = abs(n1[i] - n2[len(n2) - 1])
+                # Only consider distances from the corresponding note in the other
+                # chord, or the note that comes one index before, so [i, i-1].
+                else:
+                    d = min([abs(n1[i] - n2[j]) for j in [i, i-1]])
+                distance += d
+        return distance
+
+    def _do_voice_leading(self, chord):
+        """
+            Performs Viterbi to output the optimal inversions for each chord.
+            Optimal is defined as minimizing the overall distance traveled
+            among the chords, while still guaranteeing that the given chord ends
+            in root position.
+
+            The input is a chord that will be the next chord after the current
+            chord_stack.
+
+            Returns an array of the best chord progression that includes all of the
+            notes in the current chord_stack plus the given input chord.
+        """
+        # Each chord has a name, notes, and an inversion.
+        # Assume the last chord is going to be in root position.
+        # Use Viterbi to find best inversions for all chords.
+        # Uses self.vm, the viterbi matrix for the current chord stack.
+        if len(self.vm) < 1:
+            return [chord]
+        I = len(self.vm) - 1
+        # Expect root position chords.
+        assert(chord.inversion == 0)
+        chord_progression = [chord]
+        min_cost = sys.maxint
+        min_parent = None
+        for j in xrange(len(self.vm[I])):
+            cost = self.vm[I][j][0] + self._get_distance(self.vm[I][j][1], chord)
+            if cost < min_cost:
+                min_cost = cost
+                min_parent = j
+        # Backtrace to get the entire progression.
+        for i in xrange(I, -1, -1):
+            chord_progression.append(self.vm[i][j][1])
+            # Get next parent pointer.
+            j = self.vm[i][j][2]
+        # Reverse the chord progression because we built it in reverse.
+        chord_progression = chord_progression[::-1]
+        return chord_progression
 
 class RomanNumeral(object):
     def __init__(self):

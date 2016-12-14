@@ -41,6 +41,17 @@ class BlockBuilder(object):
     def get_current_blocks(self):
         return self.blocks
 
+    def set_blocks(self, blocks):
+        '''
+            Set the blocks to be the given blocks.
+            If length of the blocks exceeds the phrase length, return 0 and
+            do not update the blocks.
+        '''
+        if len(blocks) > self.phrase_length:
+            return -1
+        self.blocks = blocks
+        return 0
+
     # Returns an array of the chords, in order.
     # If the blocks are phrases, this flattens them and returns just an array of chords.
     def get_flattened_chords(self):

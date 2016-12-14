@@ -310,16 +310,6 @@ class ChordSelectionLayout(RelativeLayout):
             button.set_callback(self.node_button_callback)
             self.add_widget(button)
 
-        # MICHALE LOOK AT THIS THIS IS WHERE WE ADD BUTTONS
-        # instead of calling set_chords on initialization, show constrained/unconstrained progression
-        # if unconstrained --> set_chords
-        # if constrained --> show them input buttons: start chord, end chord, number of transitions
-        # pos hint and size hint: relative to the size of layout
-            # if layout is 200 x 200
-            # size hint is 0.5, then it is 50% of layout
-            # pos hint is 0.5, then it is at 50% layout
-        # we can do multiple rows here too
-
     def set_phrase_controls(self):
         self.reset()
         self.buttons.append(MenuButton({'center_x':1.0/3, 'center_y':0.5}, (0.2,0.2), 'Constrained'))
